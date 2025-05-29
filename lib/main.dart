@@ -92,7 +92,16 @@ class MainPage extends StatelessWidget {
               ),
             ],
           )),
-    ).addBGMGlobal([BGMSound.birdsSinging, BGMSound.fluteMusic]);
+    ).addBGMGlobal([
+      BackgroundSound.balance,
+      BackgroundSound.bonus,
+      BackgroundSound.journal,
+      BackgroundSound.journal2,
+      BackgroundSound.profile,
+      BackgroundSound.profile_1,
+      BackgroundSound.teamup,
+      BackgroundSound.teamup_1,
+    ]);
   }
 }
 
@@ -118,7 +127,7 @@ class SoundTestPage extends StatelessWidget {
                 color: Colors.blue.shade100,
                 borderRadius: BorderRadius.circular(8),
               ),
-            ).addSound(ClickSound.gameClick, SoundType.click),
+            ).addSound(TAPSound.tap, SoundType.tap),
 
             // Draggable widget with sound
             Draggable<String>(
@@ -141,8 +150,7 @@ class SoundTestPage extends StatelessWidget {
                 color: Colors.green,
                 child: const Center(child: Text('Drag Me')),
               ),
-            ).addSound(ClickSound.selectClick, SoundType.click,
-                isDragWidget: true),
+            ).addSound(TAPSound.tap, SoundType.tap, isDragWidget: true),
 
             const SizedBox(height: 16),
 
@@ -157,7 +165,7 @@ class SoundTestPage extends StatelessWidget {
               child: const Center(
                 child: Text('This widget plays SFX when it appears'),
               ),
-            ).addSound(SFXSound.airWoosh, SoundType.sfx),
+            ).addSound(WhooshSound.longwhoosh, SoundType.whoosh),
 
             const SizedBox(height: 16),
 
@@ -172,7 +180,7 @@ class SoundTestPage extends StatelessWidget {
               child: const Center(
                 child: Text('This widget plays notification when it appears'),
               ),
-            ).addSound(NotificationSound.retroArcade, SoundType.notification),
+            ).addSound(ReviewSound.happy, SoundType.review),
 
             const SizedBox(height: 16),
 
@@ -180,7 +188,7 @@ class SoundTestPage extends StatelessWidget {
             ElevatedButton(
               onPressed: () {},
               child: const Text('Show Notification'),
-            ).addSound(NotificationSound.retroArcade, SoundType.notification),
+            ).addSound(MessagesSound.message, SoundType.messages),
 
             const SizedBox(height: 16),
 
@@ -191,7 +199,7 @@ class SoundTestPage extends StatelessWidget {
                 subtitle: const Text('Tap to play sound effect'),
                 onTap: () {},
               ),
-            ).addSound(SFXSound.airWoosh, SoundType.sfx),
+            ).addSound(WhooshSound.longwhoosh, SoundType.whoosh),
 
             const SizedBox(height: 16),
 
@@ -222,18 +230,18 @@ class SoundTestPage extends StatelessWidget {
             children: [
               _buildSoundButton(
                 'Click',
-                ClickSound.gameClick,
-                SoundType.click,
+                TAPSound.tap,
+                SoundType.tap,
               ),
               _buildSoundButton(
                 'SFX',
-                SFXSound.airWoosh,
-                SoundType.sfx,
+                WhooshSound.longwhoosh,
+                SoundType.whoosh,
               ),
               _buildSoundButton(
                 'Notify',
-                NotificationSound.mysteryAlert,
-                SoundType.notification,
+                ReviewSound.happy,
+                SoundType.review,
               ),
             ],
           ),
@@ -333,7 +341,7 @@ class PageA extends StatelessWidget {
           ],
         ),
       ),
-    ).addBGM(BGMSound.birdsSinging);
+    ).addBGM(BackgroundSound.tetris);
   }
 }
 
@@ -362,6 +370,6 @@ class PageB extends StatelessWidget {
           ],
         ),
       ),
-    ).addBGM(BGMSound.fluteMusic);
+    ).addBGM(BackgroundSound.profile);
   }
 }

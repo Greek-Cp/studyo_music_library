@@ -22,8 +22,21 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/sounds/bgm/
-    - assets/sounds/click/
-    - assets/sounds/notification/
-    - assets/sounds/sfx/
-    - assets/icon/
+    - assets/sounds/background/
+    - assets/sounds/balance/
+    - assets/sounds/bubble/
+    - assets/sounds/clip/
+    - assets/sounds/coins/
+    - assets/sounds/deny/
+    - assets/sounds/messages/
+    - assets/sounds/pets_cleaning/
+    - assets/sounds/pets_eat/
+    - assets/sounds/pets_play/
+    - assets/sounds/pickup/
+    - assets/sounds/resources/
+    - assets/sounds/review/
+    - assets/sounds/success/
+    - assets/sounds/tap/
+    - assets/sounds/tetris/
+    - assets/sounds/transitions/
+    - assets/sounds/whoosh/

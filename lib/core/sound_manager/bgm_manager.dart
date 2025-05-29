@@ -14,14 +14,24 @@ final RouteObserver<PageRoute<dynamic>> routeObserver =
 
 /// Type of sound to be played
 enum SoundType {
-  /// Sound played on click/tap
-  click,
-
-  /// Sound effect played on widget appear
-  sfx,
-
-  /// Notification sound
-  notification,
+  background,
+  balance,
+  bubble,
+  clip,
+  coins,
+  deny,
+  messages,
+  petsCleaning,
+  petsEat,
+  petsPlay,
+  pickup,
+  resources,
+  review,
+  success,
+  tap,
+  tetris,
+  transitions,
+  whoosh,
 }
 
 /// ─────────────────────────────────────────────────────────────────────────────
@@ -39,29 +49,52 @@ class SoundQueue {
 
   final _queue = <_QueuedSound>[];
   bool _isPlaying = false;
-  static const _maxConcurrent = 9; // Naikkan ke 3 untuk lebih smooth
+  static const _maxConcurrent = 4;
   int _currentPlaying = 0;
   Timer? _processTimer;
+  final Map<String, DateTime> _lastPlayTimes = {};
 
   // Prioritas suara (semakin tinggi semakin prioritas)
   static const _priorityClick = 1;
   static const _priorityDrag = 2;
   static const _priorityNotification = 3;
 
+  // Minimum interval antara suara yang sama (dalam milliseconds)
+  static const _minIntervalSameSound = 100;
+  static const _minIntervalDifferentSound = 50;
+
   Future<void> play(String path,
-      {double volume = 1.0, SoundType type = SoundType.click}) async {
+      {double volume = 1.0, SoundType type = SoundType.review}) async {
+    final now = DateTime.now();
+    final lastPlayTime = _lastPlayTimes[path];
+
+    // Cek interval minimum berdasarkan tipe suara
+    if (lastPlayTime != null) {
+      final interval = type == SoundType.messages
+          ? _minIntervalSameSound
+          : _minIntervalDifferentSound;
+      if (now.difference(lastPlayTime).inMilliseconds < interval) {
+        return; // Skip tanpa log untuk mengurangi overhead
+      }
+    }
+
+    // Update last play time
+    _lastPlayTimes[path] = now;
+
     // Tentukan prioritas berdasarkan tipe suara
     int priority;
     switch (type) {
-      case SoundType.notification:
+      case SoundType.success:
         priority = _priorityNotification;
         break;
-      case SoundType.click:
+      case SoundType.success:
         priority = _priorityClick;
         break;
-      case SoundType.sfx:
+      case SoundType.success:
         priority = _priorityDrag;
         break;
+      default:
+        priority = _priorityNotification;
     }
 
     // Tambahkan ke antrian
@@ -93,6 +126,7 @@ class SoundQueue {
     final sound = _queue.removeAt(0);
     _currentPlaying++;
 
+    // Play sound tanpa menunggu selesai
     playOneShot(sound.path, volume: sound.volume).then((_) {
       _currentPlaying--;
       // Proses suara berikutnya
@@ -108,6 +142,7 @@ class SoundQueue {
     _queue.clear();
     _currentPlaying = 0;
     _isPlaying = false;
+    _lastPlayTimes.clear();
   }
 }
 
@@ -124,23 +159,14 @@ class _QueuedSound {
 }
 
 Future<void> playOneShot(String absPath, {double volume = 1}) async {
-  debugPrint('[SFX] 🎵 Playing one-shot: $absPath (volume: $volume)');
-
   try {
-    // Duck BGM sebelum play SFX
-    debugPrint('[SFX] 🎵 Calling duck start...');
     BgmManager.instance.duckStart();
-
     final rel = _relative(absPath);
-
-    // Try to create player with proper audio focus settings, fallback if not supported
     AudioPlayer? player;
 
     try {
       player = AudioPlayer();
       await player.setPlayerMode(PlayerMode.lowLatency);
-
-      // Try to set audio context to prevent taking audio focus from BGM
       await player.setAudioContext(
         AudioContext(
           android: AudioContextAndroid(
@@ -148,105 +174,41 @@ Future<void> playOneShot(String absPath, {double volume = 1}) async {
             stayAwake: false,
             contentType: AndroidContentType.sonification,
             usageType: AndroidUsageType.game,
-            audioFocus: AndroidAudioFocus.none, // Tidak merebut audio focus
+            audioFocus: AndroidAudioFocus.none,
           ),
         ),
       );
-      debugPrint('[SFX] 🎵 AudioPlayer created with audio context');
-    } catch (e) {
-      debugPrint('[SFX] 🎵 Audio context not supported, using FlameAudio: $e');
-      // Fallback ke FlameAudio jika AudioContext tidak didukung
-      final flamePlayer = await FlameAudio.play(rel, volume: volume);
 
-      // Simplified restore logic untuk FlameAudio
-      bool hasRestored = false;
-      void restoreBgm() {
-        if (!hasRestored) {
-          hasRestored = true;
-          debugPrint('[SFX] 🎵 Restoring BGM volume (FlameAudio)');
-          BgmManager.instance.duckEnd();
-        }
-      }
-
-      // Fallback timer untuk FlameAudio
-      Timer(const Duration(milliseconds: 500), () {
-        debugPrint('[SFX] 🎵 FlameAudio restore via timer');
-        restoreBgm();
-      });
-
-      flamePlayer.onPlayerComplete.listen((_) {
-        debugPrint('[SFX] 🎵 FlameAudio completed via listener');
-        restoreBgm();
-      });
-      return;
-    }
-
-    if (player != null) {
       await player.setSource(AssetSource(rel));
       await player.setVolume(volume);
       await player.resume();
-      debugPrint('[SFX] 🎵 AudioPlayer started playing');
 
-      // Ensure we have a reliable way to restore BGM volume
-      bool hasRestored = false;
-      Timer? fallbackTimer;
-      StreamSubscription? subscription;
-
-      void restoreBgm() {
-        if (!hasRestored) {
-          hasRestored = true;
-          debugPrint('[SFX] 🎵 ✅ Restoring BGM volume');
-
-          // Restore BGM dan pastikan masih playing
-          BgmManager.instance.duckEnd();
-
-          // Cleanup
-          fallbackTimer?.cancel();
-          subscription?.cancel();
-          player?.dispose();
-        } else {
-          debugPrint('[SFX] 🎵 ⚠️ Restore already called, skipping');
-        }
-      }
-
-      // 1) Listen for completion - primary mechanism
-      subscription = player.onPlayerComplete.listen((_) {
-        debugPrint('[SFX] 🎵 Audio completed via listener');
-        restoreBgm();
+      // Setup auto-cleanup
+      player.onPlayerComplete.listen((_) {
+        player?.dispose();
+        BgmManager.instance.duckEnd();
       });
 
-      // 2) Fallback timer dengan durasi yang lebih pendek
+      // Fallback cleanup
+      Timer(const Duration(seconds: 3), () {
+        player?.dispose();
+        BgmManager.instance.duckEnd();
+      });
+    } catch (e) {
+      // Fallback ke FlameAudio
       try {
-        final duration = await player.getDuration();
-        if (duration != null && duration.inMilliseconds > 0) {
-          // Gunakan durasi aktual + buffer 100ms
-          final fallbackDuration = duration.inMilliseconds + 100;
-          debugPrint('[SFX] 🎵 Setting fallback timer: ${fallbackDuration}ms');
-
-          fallbackTimer = Timer(Duration(milliseconds: fallbackDuration), () {
-            debugPrint('[SFX] 🎵 Audio completed via fallback timer');
-            restoreBgm();
-          });
-        } else {
-          // Fallback untuk SFX pendek
-          debugPrint('[SFX] 🎵 Using default fallback timer: 400ms');
-          fallbackTimer = Timer(const Duration(milliseconds: 400), () {
-            debugPrint('[SFX] 🎵 Audio completed via default fallback');
-            restoreBgm();
-          });
-        }
-      } catch (e) {
-        debugPrint('[SFX] 🎵 Error getting duration: $e');
-        // Fallback timer
-        fallbackTimer = Timer(const Duration(milliseconds: 400), () {
-          debugPrint('[SFX] 🎵 Audio completed via error fallback');
-          restoreBgm();
+        final flamePlayer = await FlameAudio.play(rel, volume: volume);
+        flamePlayer.onPlayerComplete.listen((_) {
+          BgmManager.instance.duckEnd();
         });
+        Timer(const Duration(seconds: 3), () {
+          BgmManager.instance.duckEnd();
+        });
+      } catch (e) {
+        BgmManager.instance.duckEnd();
       }
     }
   } catch (e) {
-    debugPrint('[SFX] 🎵 ❌ Error playing sound: $e');
-    // Pastikan BGM di-restore meski ada error
     BgmManager.instance.duckEnd();
   }
 }
@@ -269,15 +231,63 @@ extension SoundExtension on Widget {
     // Ambil path sesuai tipe
     String path;
     switch (type) {
-      case SoundType.click:
-        path = SoundPaths.instance.clickSoundPaths[sound as ClickSound]!;
+      case SoundType.background:
+        path =
+            SoundPaths.instance.backgroundSoundPaths[sound as BackgroundSound]!;
         break;
-      case SoundType.sfx:
-        path = SoundPaths.instance.sfxSoundPaths[sound as SFXSound]!;
+      case SoundType.balance:
+        path = SoundPaths.instance.balanceSoundPaths[sound as BalanceSound]!;
         break;
-      case SoundType.notification:
+      case SoundType.bubble:
+        path = SoundPaths.instance.bubbleSoundPaths[sound as BubbleSound]!;
+        break;
+      case SoundType.clip:
+        path = SoundPaths.instance.clipSoundPaths[sound as ClipSound]!;
+        break;
+      case SoundType.coins:
+        path = SoundPaths.instance.coinsSoundPaths[sound as CoinsSound]!;
+        break;
+      case SoundType.deny:
+        path = SoundPaths.instance.denySoundPaths[sound as DenySound]!;
+        break;
+      case SoundType.messages:
+        path = SoundPaths.instance.messagesSoundPaths[sound as MessagesSound]!;
+        break;
+      case SoundType.petsCleaning:
         path = SoundPaths
-            .instance.notificationSoundPaths[sound as NotificationSound]!;
+            .instance.pets_cleaningSoundPaths[sound as PetsCleaningSound]!;
+        break;
+      case SoundType.petsEat:
+        path = SoundPaths.instance.pets_eatSoundPaths[sound as PetsEatSound]!;
+        break;
+      case SoundType.petsPlay:
+        path = SoundPaths.instance.pets_playSoundPaths[sound as PetsPlaySound]!;
+        break;
+      case SoundType.pickup:
+        path = SoundPaths.instance.pickupSoundPaths[sound as PickupSound]!;
+        break;
+      case SoundType.resources:
+        path =
+            SoundPaths.instance.resourcesSoundPaths[sound as ResourcesSound]!;
+        break;
+      case SoundType.review:
+        path = SoundPaths.instance.reviewSoundPaths[sound as ReviewSound]!;
+        break;
+      case SoundType.success:
+        path = SoundPaths.instance.successSoundPaths[sound as SuccessSound]!;
+        break;
+      case SoundType.tap:
+        path = SoundPaths.instance.tapSoundPaths[sound as TAPSound]!;
+        break;
+      case SoundType.tetris:
+        path = SoundPaths.instance.tetrisSoundPaths[sound as TetrisSound]!;
+        break;
+      case SoundType.transitions:
+        path = SoundPaths
+            .instance.transitionsSoundPaths[sound as TransitionsSound]!;
+        break;
+      case SoundType.whoosh:
+        path = SoundPaths.instance.whooshSoundPaths[sound as WhooshSound]!;
         break;
     }
 
@@ -320,17 +330,89 @@ class _DragSoundWrapper extends StatefulWidget {
 
 class _DragSoundWrapperState extends State<_DragSoundWrapper> {
   DateTime? _lastPlayTime;
-  static const _minInterval =
-      Duration(milliseconds: 50); // Kurangi lagi untuk respons lebih cepat
+  static const _minInterval = Duration(milliseconds: 50);
+  Offset? _lastPosition;
+  bool _isDragging = false;
+  double _lastVelocity = 0;
+  static const _minVelocityThreshold =
+      300.0; // Minimum velocity untuk memainkan whoosh
+  static const _maxVelocityThreshold =
+      2000.0; // Maximum velocity untuk scaling volume
+  static const _whooshCooldown =
+      Duration(milliseconds: 150); // Cooldown antara whoosh sounds
+  DateTime? _lastWhooshTime;
 
   void _onPointerDown(PointerDownEvent event) {
     final now = DateTime.now();
     if (_lastPlayTime == null ||
         now.difference(_lastPlayTime!) > _minInterval) {
       _lastPlayTime = now;
+      _lastPosition = event.position;
       SoundQueue.instance
           .play(widget.path, volume: widget.volume, type: widget.type);
     }
+  }
+
+  void _onPointerMove(PointerMoveEvent event) {
+    if (!_isDragging) {
+      _isDragging = true;
+      return;
+    }
+
+    if (_lastPosition != null) {
+      final now = DateTime.now();
+      final deltaTime =
+          now.difference(_lastPlayTime ?? now).inMilliseconds / 1000.0;
+      if (deltaTime > 0) {
+        final deltaPosition = event.position - _lastPosition!;
+        final velocity = deltaPosition.distance / deltaTime;
+        _lastVelocity = velocity;
+
+        // Cek apakah sudah waktunya memainkan whoosh sound
+        if (_lastWhooshTime == null ||
+            now.difference(_lastWhooshTime!) > _whooshCooldown) {
+          // Hanya mainkan whoosh jika kecepatan cukup tinggi
+          if (velocity > _minVelocityThreshold) {
+            // Scale volume berdasarkan kecepatan
+            final volumeScale = math.min(
+                (velocity - _minVelocityThreshold) /
+                    (_maxVelocityThreshold - _minVelocityThreshold),
+                1.0);
+
+            // Volume minimum 0.3, maximum 0.7
+            final whooshVolume = 0.3 + (volumeScale * 0.4);
+
+            SoundQueue.instance.play(
+              SoundPaths.instance.whooshSoundPaths[WhooshSound.longwhoosh]!,
+              volume: widget.volume * whooshVolume,
+              type: SoundType.whoosh,
+            );
+
+            _lastWhooshTime = now;
+          }
+        }
+      }
+      _lastPosition = event.position;
+      _lastPlayTime = now;
+    }
+  }
+
+  void _onPointerUp(PointerUpEvent event) {
+    if (_isDragging) {
+      // Mainkan suara click saat drop dengan volume yang menyesuaikan kecepatan
+      final dropVolume = math.min(_lastVelocity / _maxVelocityThreshold, 1.0);
+      final clickVolume = 0.4 + (dropVolume * 0.3); // Volume antara 0.4 - 0.7
+
+      SoundQueue.instance.play(
+        SoundPaths.instance.clipSoundPaths[ClipSound.containerdrop]!,
+        volume: widget.volume * clickVolume,
+        type: SoundType.clip,
+      );
+    }
+
+    _isDragging = false;
+    _lastPosition = null;
+    _lastVelocity = 0;
   }
 
   @override
@@ -338,6 +420,8 @@ class _DragSoundWrapperState extends State<_DragSoundWrapper> {
     return Listener(
       behavior: HitTestBehavior.translucent,
       onPointerDown: _onPointerDown,
+      onPointerMove: _onPointerMove,
+      onPointerUp: _onPointerUp,
       child: widget.child,
     );
   }
@@ -346,13 +430,13 @@ class _DragSoundWrapperState extends State<_DragSoundWrapper> {
 /// ─────────────────────────────────────────────────────────────────────────────
 ///  BGM EXTENSION
 extension BgmExtension on Widget {
-  Widget addBGM(BGMSound bgm) => _BgmWrapper(child: this, bgm: bgm);
+  Widget addBGM(BackgroundSound bgm) => _BgmWrapper(child: this, bgm: bgm);
 }
 
 /// ─────────────────────────────────────────────────────────────────────────────
 ///  BGM GLOBAL EXTENSION
 extension BgmGlobalExtension on Widget {
-  Widget addBGMGlobal(List<BGMSound> listSound) => _BgmGlobalWrapper(
+  Widget addBGMGlobal(List<BackgroundSound> listSound) => _BgmGlobalWrapper(
         child: this,
         listSound: listSound,
       );
@@ -361,7 +445,7 @@ extension BgmGlobalExtension on Widget {
 class _BgmWrapper extends StatefulWidget {
   const _BgmWrapper({required this.child, required this.bgm});
   final Widget child;
-  final BGMSound bgm;
+  final BackgroundSound bgm;
   @override
   State<_BgmWrapper> createState() => _BgmWrapperState();
 }
@@ -411,7 +495,7 @@ class _BgmGlobalWrapper extends StatefulWidget {
     required this.listSound,
   });
   final Widget child;
-  final List<BGMSound> listSound;
+  final List<BackgroundSound> listSound;
   @override
   State<_BgmGlobalWrapper> createState() => _BgmGlobalWrapperState();
 }
@@ -461,17 +545,17 @@ class BgmManager {
   BgmManager._();
   static final BgmManager instance = BgmManager._();
 
-  final _stack = <BGMSound>[];
+  final _stack = <BackgroundSound>[];
   AudioPlayer? _current;
-  BGMSound? _currentSound;
+  BackgroundSound? _currentSound;
 
   // Global BGM state
-  List<BGMSound> _globalBGMList = [];
+  List<BackgroundSound> _globalBGMList = [];
   int _globalCounterSound = 0;
   int _currentTrackIndex = 0;
   bool _isGlobalBGMActive = false;
   AudioPlayer? _globalPlayer;
-  BGMSound? _globalCurrentSound;
+  BackgroundSound? _globalCurrentSound;
 
   /* cross-fade antar-halaman */
   final _xFade = const Duration(milliseconds: 600);
@@ -494,7 +578,7 @@ class BgmManager {
   static const String _counterSoundKey = 'bgm_counter_sound';
 
   /* ── GLOBAL BGM API ── */
-  Future<void> setGlobalBGM(List<BGMSound> listSound) async {
+  Future<void> setGlobalBGM(List<BackgroundSound> listSound) async {
     debugPrint('[BGM] 🌍 Setting global BGM with ${listSound.length} tracks');
     _globalBGMList = listSound;
 
@@ -573,7 +657,7 @@ class BgmManager {
     }
   }
 
-  Future<void> _switchToGlobalBgm(BGMSound newBgm) async {
+  Future<void> _switchToGlobalBgm(BackgroundSound newBgm) async {
     try {
       await _stopGlobalBGM();
 
@@ -599,7 +683,7 @@ class BgmManager {
 
       await newPlayer.setReleaseMode(ReleaseMode.loop);
 
-      final absPath = SoundPaths.instance.bgmSoundPaths[newBgm]!;
+      final absPath = SoundPaths.instance.backgroundSoundPaths[newBgm]!;
       final relPath = _relative(absPath);
 
       await newPlayer.setSource(AssetSource(relPath));
@@ -630,7 +714,7 @@ class BgmManager {
   }
 
   /* ── PUBLIC API untuk wrapper ── */
-  void push(BGMSound s) {
+  void push(BackgroundSound s) {
     debugPrint('[BGM] Push: $s');
     _stack.add(s);
 
@@ -642,7 +726,7 @@ class BgmManager {
     _queueRefresh();
   }
 
-  void pop(BGMSound s) {
+  void pop(BackgroundSound s) {
     debugPrint('[BGM] Pop: $s');
     _stack.remove(s);
     _queueRefresh();
@@ -883,7 +967,7 @@ class BgmManager {
     }
   }
 
-  Future<void> _switchToBgm(BGMSound newBgm) async {
+  Future<void> _switchToBgm(BackgroundSound newBgm) async {
     try {
       final newPlayer = AudioPlayer();
 
@@ -907,7 +991,7 @@ class BgmManager {
 
       await newPlayer.setReleaseMode(ReleaseMode.loop);
 
-      final absPath = SoundPaths.instance.bgmSoundPaths[newBgm]!;
+      final absPath = SoundPaths.instance.backgroundSoundPaths[newBgm]!;
       final relPath = _relative(absPath);
 
       await newPlayer.setSource(AssetSource(relPath));
