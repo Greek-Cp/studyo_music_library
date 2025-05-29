@@ -104,7 +104,6 @@ class MainPage extends StatelessWidget {
       BackgroundSound.journal,
       BackgroundSound.journal2,
       BackgroundSound.profile,
-      BackgroundSound.profile_1,
       BackgroundSound.teamup,
       BackgroundSound.teamup_1,
     ]);
@@ -340,6 +339,14 @@ class _PageAState extends State<PageA> {
   ];
 
   final Map<String, String> droppedItems = {};
+  final bgmVolume = 0.5.obs; // Default BGM volume 50%
+
+  @override
+  void initState() {
+    super.initState();
+    // Set initial BGM volume
+    BgmManager.instance.setBaseVolume(bgmVolume.value);
+  }
 
   void _onDragEnd(String itemId, String targetId) {
     final item = items.firstWhere((item) => item.id == itemId);
@@ -370,6 +377,28 @@ class _PageAState extends State<PageA> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Drag & Drop Game'),
+        actions: [
+          // BGM Volume Control
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              children: [
+                const Icon(Icons.volume_up),
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 100,
+                  child: Obx(() => Slider(
+                        value: bgmVolume.value,
+                        onChanged: (value) {
+                          bgmVolume.value = value;
+                          BgmManager.instance.setBaseVolume(value);
+                        },
+                      )),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
       body: Column(
         children: [

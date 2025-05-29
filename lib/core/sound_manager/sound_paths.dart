@@ -15,7 +15,6 @@ class SoundPaths {
     BackgroundSound.journal2: '${_root}background/journal2.m4a',
     BackgroundSound.bonus: '${_root}background/bonus.m4a',
     BackgroundSound.teamup: '${_root}background/teamup.m4a',
-    BackgroundSound.profile: '${_root}background/profile.m4a',
     BackgroundSound.bubbles: '${_root}background/bubbles.m4a',
     BackgroundSound.tetris: '${_root}background/tetris.m4a',
     BackgroundSound.balance: '${_root}background/balance.m4a',
