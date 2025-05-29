@@ -33,6 +33,96 @@ void _logVol(double v) =>
 
 /// ─────────────────────────────────────────────────────────────────────────────
 ///  ONE-SHOT PLAY + DUCKING HOOK
+class SoundQueue {
+  static final SoundQueue instance = SoundQueue._();
+  SoundQueue._();
+
+  final _queue = <_QueuedSound>[];
+  bool _isPlaying = false;
+  static const _maxConcurrent = 9; // Naikkan ke 3 untuk lebih smooth
+  int _currentPlaying = 0;
+  Timer? _processTimer;
+
+  // Prioritas suara (semakin tinggi semakin prioritas)
+  static const _priorityClick = 1;
+  static const _priorityDrag = 2;
+  static const _priorityNotification = 3;
+
+  Future<void> play(String path,
+      {double volume = 1.0, SoundType type = SoundType.click}) async {
+    // Tentukan prioritas berdasarkan tipe suara
+    int priority;
+    switch (type) {
+      case SoundType.notification:
+        priority = _priorityNotification;
+        break;
+      case SoundType.click:
+        priority = _priorityClick;
+        break;
+      case SoundType.sfx:
+        priority = _priorityDrag;
+        break;
+    }
+
+    // Tambahkan ke antrian
+    _queue.add(_QueuedSound(path: path, volume: volume, priority: priority));
+
+    // Sort antrian berdasarkan prioritas
+    _queue.sort((a, b) => b.priority.compareTo(a.priority));
+
+    // Mulai proses antrian jika belum berjalan
+    if (!_isPlaying) {
+      _isPlaying = true;
+      _processQueue();
+    }
+  }
+
+  void _processQueue() {
+    if (_queue.isEmpty) {
+      _isPlaying = false;
+      return;
+    }
+
+    if (_currentPlaying >= _maxConcurrent) {
+      // Jika masih penuh, coba lagi setelah 50ms
+      _processTimer?.cancel();
+      _processTimer = Timer(const Duration(milliseconds: 50), _processQueue);
+      return;
+    }
+
+    final sound = _queue.removeAt(0);
+    _currentPlaying++;
+
+    playOneShot(sound.path, volume: sound.volume).then((_) {
+      _currentPlaying--;
+      // Proses suara berikutnya
+      _processQueue();
+    }).catchError((_) {
+      _currentPlaying--;
+      _processQueue();
+    });
+  }
+
+  void dispose() {
+    _processTimer?.cancel();
+    _queue.clear();
+    _currentPlaying = 0;
+    _isPlaying = false;
+  }
+}
+
+class _QueuedSound {
+  final String path;
+  final double volume;
+  final int priority;
+
+  _QueuedSound({
+    required this.path,
+    required this.volume,
+    required this.priority,
+  });
+}
+
 Future<void> playOneShot(String absPath, {double volume = 1}) async {
   debugPrint('[SFX] 🎵 Playing one-shot: $absPath (volume: $volume)');
 
@@ -193,9 +283,10 @@ extension SoundExtension on Widget {
 
     // Draggable → Listener (tidak mengganggu gesture internal)
     if (isDragWidget) {
-      return Listener(
-        behavior: HitTestBehavior.translucent,
-        onPointerDown: (_) => playOneShot(path, volume: volume),
+      return _DragSoundWrapper(
+        path: path,
+        volume: volume,
+        type: type,
         child: this,
       );
     }
@@ -203,8 +294,51 @@ extension SoundExtension on Widget {
     // Default (tap)
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
-      onTapDown: (_) => playOneShot(path, volume: volume),
+      onTapDown: (_) =>
+          SoundQueue.instance.play(path, volume: volume, type: type),
       child: this,
+    );
+  }
+}
+
+class _DragSoundWrapper extends StatefulWidget {
+  final Widget child;
+  final String path;
+  final double volume;
+  final SoundType type;
+
+  const _DragSoundWrapper({
+    required this.child,
+    required this.path,
+    required this.volume,
+    required this.type,
+  });
+
+  @override
+  State<_DragSoundWrapper> createState() => _DragSoundWrapperState();
+}
+
+class _DragSoundWrapperState extends State<_DragSoundWrapper> {
+  DateTime? _lastPlayTime;
+  static const _minInterval =
+      Duration(milliseconds: 50); // Kurangi lagi untuk respons lebih cepat
+
+  void _onPointerDown(PointerDownEvent event) {
+    final now = DateTime.now();
+    if (_lastPlayTime == null ||
+        now.difference(_lastPlayTime!) > _minInterval) {
+      _lastPlayTime = now;
+      SoundQueue.instance
+          .play(widget.path, volume: widget.volume, type: widget.type);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      behavior: HitTestBehavior.translucent,
+      onPointerDown: _onPointerDown,
+      child: widget.child,
     );
   }
 }

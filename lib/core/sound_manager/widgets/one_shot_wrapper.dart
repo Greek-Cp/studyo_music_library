@@ -18,12 +18,26 @@ class OneShotOnInitWrapper extends StatefulWidget {
 }
 
 class _OneShotOnInitWrapperState extends State<OneShotOnInitWrapper> {
+  bool _hasPlayed = false;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      playOneShot(widget.path, volume: widget.volume);
-    });
+    _playSound();
+  }
+
+  Future<void> _playSound() async {
+    if (_hasPlayed) return;
+
+    try {
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
+
+      await playOneShot(widget.path, volume: widget.volume);
+      _hasPlayed = true;
+    } catch (e) {
+      debugPrint('[OneShotOnInitWrapper] Error playing sound: $e');
+    }
   }
 
   @override

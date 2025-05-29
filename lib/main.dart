@@ -146,6 +146,36 @@ class SoundTestPage extends StatelessWidget {
 
             const SizedBox(height: 16),
 
+            // Widget with SFX on appear
+            Container(
+              height: 100,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Text('This widget plays SFX when it appears'),
+              ),
+            ).addSound(SFXSound.airWoosh, SoundType.sfx),
+
+            const SizedBox(height: 16),
+
+            // Widget with notification sound
+            Container(
+              height: 100,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.purple.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Text('This widget plays notification when it appears'),
+              ),
+            ).addSound(NotificationSound.retroArcade, SoundType.notification),
+
+            const SizedBox(height: 16),
+
             // Button with notification sound
             ElevatedButton(
               onPressed: () {},
