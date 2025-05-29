@@ -634,15 +634,27 @@ class BgmManager {
   }
 
   Future<void> _startGlobalBGM() async {
-    if (!_isGlobalBGMActive || _globalBGMList.isEmpty) return;
+    if (!_isGlobalBGMActive || _globalBGMList.isEmpty) {
+      debugPrint(
+          '[BGM] 🌍 Cannot start global BGM: Active=$_isGlobalBGMActive, List=${_globalBGMList.length}');
+      return;
+    }
 
     try {
       debugPrint('[BGM] 🌍 Starting global BGM - Track $_currentTrackIndex');
 
+      if (_currentTrackIndex >= _globalBGMList.length) {
+        debugPrint(
+            '[BGM] 🌍 ❌ Invalid track index: $_currentTrackIndex (max: ${_globalBGMList.length - 1})');
+        _currentTrackIndex = 0;
+      }
+
       final newSound = _globalBGMList[_currentTrackIndex];
+      debugPrint('[BGM] 🌍 Loading track: $newSound');
       await _switchToGlobalBgm(newSound);
     } catch (e) {
-      debugPrint('[BGM] 🌍 Error starting global BGM: $e');
+      debugPrint('[BGM] 🌍 ❌ Error starting global BGM: $e');
+      debugPrint('[BGM] 🌍 Stack trace: ${StackTrace.current}');
     }
   }
 
@@ -659,6 +671,7 @@ class BgmManager {
 
   Future<void> _switchToGlobalBgm(BackgroundSound newBgm) async {
     try {
+      debugPrint('[BGM] 🌍 Switching to global BGM: $newBgm');
       await _stopGlobalBGM();
 
       final newPlayer = AudioPlayer();
@@ -672,21 +685,33 @@ class BgmManager {
               stayAwake: true,
               contentType: AndroidContentType.music,
               usageType: AndroidUsageType.game,
-              audioFocus: AndroidAudioFocus.gain, // Keep audio focus untuk BGM
+              audioFocus: AndroidAudioFocus.gain,
             ),
           ),
         );
       } catch (e) {
         debugPrint('[BGM] 🌍 Audio context not supported: $e');
-        // Continue without audio context if not supported
       }
 
-      await newPlayer.setReleaseMode(ReleaseMode.loop);
+      // Hapus ReleaseMode.loop agar tidak loop
+      await newPlayer.setReleaseMode(ReleaseMode.stop);
 
-      final absPath = SoundPaths.instance.backgroundSoundPaths[newBgm]!;
+      final absPath = SoundPaths.instance.backgroundSoundPaths[newBgm];
+      if (absPath == null) {
+        debugPrint('[BGM] 🌍 ❌ Error: BGM path not found for $newBgm');
+        return;
+      }
       final relPath = _relative(absPath);
+      debugPrint('[BGM] 🌍 Loading BGM from path: $relPath');
 
       await newPlayer.setSource(AssetSource(relPath));
+
+      // Setup completion listener untuk auto-increment track
+      newPlayer.onPlayerComplete.listen((_) {
+        debugPrint('[BGM] 🌍 Track completed, moving to next track');
+        _incrementCounter();
+        _startGlobalBGM();
+      });
 
       // Apply current duck state
       final initialVolume = _duckCounter > 0 ? _duckVolume : _baseVolume;
@@ -699,7 +724,8 @@ class BgmManager {
 
       debugPrint('[BGM] 🌍 Global BGM switched to: $newBgm');
     } catch (e) {
-      debugPrint('[BGM] 🌍 Error switching global BGM: $e');
+      debugPrint('[BGM] 🌍 ❌ Error switching global BGM: $e');
+      debugPrint('[BGM] 🌍 Stack trace: ${StackTrace.current}');
     }
   }
 
