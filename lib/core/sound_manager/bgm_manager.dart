@@ -1254,3 +1254,108 @@ class BgmManager {
     };
   }
 }
+
+/// ─────────────────────────────────────────────────────────────────────────────
+///  SOUND CONTROLLER
+class SoundController {
+  static final SoundController instance = SoundController._();
+  SoundController._();
+
+  /// Play any sound with specified type and volume
+  ///
+  /// Example usage:
+  /// ```dart
+  /// // Play whoosh sound
+  /// await SoundController.instance.playSound(
+  ///   WhooshSound.longwhoosh,
+  ///   SoundType.whoosh,
+  ///   volume: 1.0
+  /// );
+  ///
+  /// // Play BGM
+  /// await SoundController.instance.playSound(
+  ///   BackgroundSound.yourBGM,
+  ///   SoundType.background,
+  ///   volume: 1.0
+  /// );
+  /// ```
+  Future<void> playSound(
+    dynamic sound,
+    SoundType type, {
+    double volume = 1.0,
+  }) async {
+    String path;
+    switch (type) {
+      case SoundType.background:
+        path =
+            SoundPaths.instance.backgroundSoundPaths[sound as BackgroundSound]!;
+        break;
+      case SoundType.balance:
+        path = SoundPaths.instance.balanceSoundPaths[sound as BalanceSound]!;
+        break;
+      case SoundType.bubble:
+        path = SoundPaths.instance.bubbleSoundPaths[sound as BubbleSound]!;
+        break;
+      case SoundType.clip:
+        path = SoundPaths.instance.clipSoundPaths[sound as ClipSound]!;
+        break;
+      case SoundType.coins:
+        path = SoundPaths.instance.coinsSoundPaths[sound as CoinsSound]!;
+        break;
+      case SoundType.deny:
+        path = SoundPaths.instance.denySoundPaths[sound as DenySound]!;
+        break;
+      case SoundType.messages:
+        path = SoundPaths.instance.messagesSoundPaths[sound as MessagesSound]!;
+        break;
+      case SoundType.petsCleaning:
+        path = SoundPaths
+            .instance.pets_cleaningSoundPaths[sound as PetsCleaningSound]!;
+        break;
+      case SoundType.petsEat:
+        path = SoundPaths.instance.pets_eatSoundPaths[sound as PetsEatSound]!;
+        break;
+      case SoundType.petsPlay:
+        path = SoundPaths.instance.pets_playSoundPaths[sound as PetsPlaySound]!;
+        break;
+      case SoundType.pickup:
+        path = SoundPaths.instance.pickupSoundPaths[sound as PickupSound]!;
+        break;
+      case SoundType.resources:
+        path =
+            SoundPaths.instance.resourcesSoundPaths[sound as ResourcesSound]!;
+        break;
+      case SoundType.review:
+        path = SoundPaths.instance.reviewSoundPaths[sound as ReviewSound]!;
+        break;
+      case SoundType.success:
+        path = SoundPaths.instance.successSoundPaths[sound as SuccessSound]!;
+        break;
+      case SoundType.tap:
+        path = SoundPaths.instance.tapSoundPaths[sound as TAPSound]!;
+        break;
+      case SoundType.tetris:
+        path = SoundPaths.instance.tetrisSoundPaths[sound as TetrisSound]!;
+        break;
+      case SoundType.transitions:
+        path = SoundPaths
+            .instance.transitionsSoundPaths[sound as TransitionsSound]!;
+        break;
+      case SoundType.whoosh:
+        path = SoundPaths.instance.whooshSoundPaths[sound as WhooshSound]!;
+        break;
+    }
+
+    await SoundQueue.instance.play(path, volume: volume, type: type);
+  }
+
+  /// Set global BGM list
+  Future<void> setGlobalBGM(List<BackgroundSound> listSound) async {
+    BgmManager.instance.setGlobalBGM(listSound);
+  }
+
+  /// Stop all BGM
+  Future<void> stopBGM() async {
+    BgmManager.instance.clearGlobalBGM();
+  }
+}
