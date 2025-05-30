@@ -4,7 +4,8 @@ import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import '../bgm_manager.dart';
 
-String relative(String full) => full.replaceFirst('assets/', '');
+String relative(String full) =>
+    full.replaceFirst('packages/studyo_music_library/assets/', '');
 
 void logVol(double v) =>
     debugPrint('[BGM] 🔊 volume → ${v.toStringAsFixed(2)}');

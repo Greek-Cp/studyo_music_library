@@ -10,7 +10,7 @@ packages:
     source: hosted
     version: "2.11.0"
   audioplayers:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: audioplayers
       sha256: a5341380a4f1d3a10a4edde5bb75de5127fe31e0faa8c4d860e64d2f91ad84c7
@@ -66,7 +66,7 @@ packages:
     source: hosted
     version: "4.2.0"
   auto_size_text:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: auto_size_text
       sha256: "3f5261cd3fb5f2a9ab4e2fc3fba84fd9fcaac8821f20a1d4e71f557521b22599"
@@ -98,7 +98,7 @@ packages:
     source: hosted
     version: "1.1.1"
   collection:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: collection
       sha256: ee67cb0715911d28db6bf4af1026078bd6f0128b07a5f66fb2ed94ec6783c09a
@@ -154,7 +154,7 @@ packages:
     source: hosted
     version: "1.23.0"
   flame_audio:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: flame_audio
       sha256: "90c02ac76e862431db348bb7642c8da112ab083dcf6bccd4853733b3b9b2b33c"
@@ -185,7 +185,7 @@ packages:
     source: sdk
     version: "0.0.0"
   get:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: get
       sha256: c79eeb4339f1f3deffd9ec912f8a923834bec55f7b49c9e882b8fef2c139d425
@@ -345,7 +345,7 @@ packages:
     source: hosted
     version: "2.1.8"
   shared_preferences:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: shared_preferences
       sha256: "6e8bf70b7fef813df4e9a36f658ac46d107db4b4cfe1048b477d4e453a8159f5"
@@ -445,6 +445,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.0"
+  studyo_music_library:
+    dependency: "direct main"
+    description:
+      path: ".."
+      relative: true
+    source: path
+    version: "0.1.0"
   synchronized:
     dependency: transitive
     description:

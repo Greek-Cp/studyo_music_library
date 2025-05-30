@@ -36,7 +36,8 @@ enum SoundType {
 
 /// ─────────────────────────────────────────────────────────────────────────────
 ///  UTIL
-String _relative(String full) => full.replaceFirst('assets/', '');
+String _relative(String full) =>
+    full.replaceFirst('packages/studyo_music_library/assets/', '');
 
 void _logVol(double v) =>
     debugPrint('[BGM] 🔊 volume → ${v.toStringAsFixed(2)}');

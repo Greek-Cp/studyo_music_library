@@ -1,7 +1,9 @@
 name: studyo_music_library
-description: "A new Flutter project."
+description: "A comprehensive Flutter sound management library with BGM, SFX, and audio ducking capabilities."
 publish_to: 'none'
 version: 0.1.0
+homepage: https://github.com/yourusername/studyo_music_library
+repository: https://github.com/yourusername/studyo_music_library
 
 environment:
   sdk: ^3.5.0
@@ -9,15 +11,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  auto_size_text: ^3.0.0  
   flame_audio: ^2.10.7
   shared_preferences: ^2.3.1
-  get: ^4.7.2
+  audioplayers: ^6.0.0
+  collection: ^1.18.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  get: ^4.7.2
+  auto_size_text: ^3.0.0
 
 flutter:
   uses-material-design: true

@@ -1,14 +1,13 @@
 import 'sound_enums.dart';
 
-const _assetPrefix = '';
+const _assetPrefix = 'packages/studyo_music_library/';
 
-/// Class to manage sound asset paths
 /// Class to manage sound asset paths
 class SoundPaths {
   SoundPaths._(); // singleton
   static final instance = SoundPaths._();
 
-  static const _root = 'assets/sounds/';
+  static const _root = '${_assetPrefix}assets/sounds/';
 
   final backgroundSoundPaths = <BackgroundSound, String>{
     BackgroundSound.journal: '${_root}background/journal.m4a',
