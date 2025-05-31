@@ -8,7 +8,7 @@ export 'core/sound_manager/sound_enums.dart';
 
 // Sound Paths
 export 'core/sound_manager/sound_paths.dart';
-
+export 'package:flame_audio/flame_audio.dart';
 // Extensions
 export 'core/sound_manager/extensions/sound_extensions.dart';
 
