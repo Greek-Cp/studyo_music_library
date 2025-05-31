@@ -25,6 +25,11 @@ Future<void> playOneShot(String absPath, {double volume = 1}) async {
 
     try {
       player = AudioPlayer();
+
+      // Set audioCache dengan prefix untuk package assets
+      player.audioCache =
+          AudioCache(prefix: 'packages/studyo_music_library/assets/');
+
       await player.setPlayerMode(PlayerMode.lowLatency);
 
       // Try to set audio context to prevent taking audio focus from BGM

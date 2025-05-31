@@ -2,8 +2,8 @@ name: studyo_music_library
 description: "A comprehensive Flutter sound management library with BGM, SFX, and audio ducking capabilities."
 publish_to: 'none'
 version: 0.1.0
-homepage: https://github.com/yourusername/studyo_music_library
-repository: https://github.com/yourusername/studyo_music_library
+homepage: https://github.com/greek-cp/studyo_music_library
+repository: https://github.com/greek-cp/studyo_music_library
 
 environment:
   sdk: ^3.5.0
@@ -43,3 +43,6 @@ flutter:
     - assets/sounds/tetris/
     - assets/sounds/transitions/
     - assets/sounds/whoosh/
+
+export:
+  flame_audio: ^2.10.7
