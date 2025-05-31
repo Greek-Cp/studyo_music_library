@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -88,10 +87,10 @@ class SoundQueue {
       case SoundType.success:
         priority = _priorityNotification;
         break;
-      case SoundType.success:
+      case SoundType.tap:
         priority = _priorityClick;
         break;
-      case SoundType.success:
+      case SoundType.whoosh:
         priority = _priorityDrag;
         break;
       default:
@@ -163,61 +162,34 @@ Future<void> playOneShot(String absPath, {double volume = 1}) async {
   try {
     BgmManager.instance.duckStart();
     final rel = _relative(absPath);
-    AudioPlayer? player;
 
     try {
-      player = AudioPlayer();
-      await player.setPlayerMode(PlayerMode.lowLatency);
-      await player.setAudioContext(
-        AudioContext(
-          android: AudioContextAndroid(
-            isSpeakerphoneOn: false,
-            stayAwake: false,
-            contentType: AndroidContentType.sonification,
-            usageType: AndroidUsageType.game,
-            audioFocus: AndroidAudioFocus.none,
-          ),
-        ),
-      );
+      // Set empty prefix to handle package paths correctly
+      FlameAudio.audioCache.prefix = '';
 
-      await player.setSource(AssetSource(rel));
-      await player.setVolume(volume);
-      await player.resume();
+      final player = await FlameAudio.play(rel, volume: volume);
 
       // Setup auto-cleanup
       player.onPlayerComplete.listen((_) {
-        player?.dispose();
         BgmManager.instance.duckEnd();
       });
 
       // Fallback cleanup
       Timer(const Duration(seconds: 3), () {
-        player?.dispose();
         BgmManager.instance.duckEnd();
       });
     } catch (e) {
-      // Fallback ke FlameAudio
-      try {
-        final flamePlayer = await FlameAudio.play(rel, volume: volume);
-        flamePlayer.onPlayerComplete.listen((_) {
-          BgmManager.instance.duckEnd();
-        });
-        Timer(const Duration(seconds: 3), () {
-          BgmManager.instance.duckEnd();
-        });
-      } catch (e) {
-        BgmManager.instance.duckEnd();
-      }
+      debugPrint('[SFX] Error playing sound: $e');
+      BgmManager.instance.duckEnd();
     }
   } catch (e) {
+    debugPrint('[SFX] Unexpected error: $e');
     BgmManager.instance.duckEnd();
   }
 }
 
 /// ─────────────────────────────────────────────────────────────────────────────
 ///  EXTENSIONS
-// ─────────────────────────────────────────────────────────────────────────────
-//  EXTENSIONS
 extension SoundExtension on Widget {
   /// [sound]         → enum sesuai `type`
   /// [type]          → click | sfx | notification
@@ -543,11 +515,13 @@ class _BgmGlobalWrapperState extends State<_BgmGlobalWrapper> with RouteAware {
 /// ─────────────────────────────────────────────────────────────────────────────
 ///  BGM MANAGER  (stack-aware + ducking + global BGM)
 class BgmManager {
-  BgmManager._();
+  BgmManager._() {
+    // Set empty prefix for flame_audio to handle package paths correctly
+    FlameAudio.audioCache.prefix = '';
+  }
   static final BgmManager instance = BgmManager._();
 
   final _stack = <BackgroundSound>[];
-  AudioPlayer? _current;
   BackgroundSound? _currentSound;
 
   // Global BGM state
@@ -555,7 +529,6 @@ class BgmManager {
   int _globalCounterSound = 0;
   int _currentTrackIndex = 0;
   bool _isGlobalBGMActive = false;
-  AudioPlayer? _globalPlayer;
   BackgroundSound? _globalCurrentSound;
 
   /* cross-fade antar-halaman */
@@ -660,12 +633,10 @@ class BgmManager {
   }
 
   Future<void> _stopGlobalBGM() async {
-    if (_globalPlayer != null) {
+    if (_globalCurrentSound != null) {
       debugPrint('[BGM] 🌍 Stopping global BGM');
       _volumeAnimationTimer?.cancel();
-      await _globalPlayer!.stop();
-      await _globalPlayer!.dispose();
-      _globalPlayer = null;
+      await FlameAudio.bgm.stop();
       _globalCurrentSound = null;
     }
   }
@@ -675,59 +646,39 @@ class BgmManager {
       debugPrint('[BGM] 🌍 Switching to global BGM: $newBgm');
       await _stopGlobalBGM();
 
-      final newPlayer = AudioPlayer();
-
-      // Try to set audio context untuk BGM - keep audio focus
-      try {
-        await newPlayer.setAudioContext(
-          AudioContext(
-            android: AudioContextAndroid(
-              isSpeakerphoneOn: false,
-              stayAwake: true,
-              contentType: AndroidContentType.music,
-              usageType: AndroidUsageType.game,
-              audioFocus: AndroidAudioFocus.gain,
-            ),
-          ),
-        );
-      } catch (e) {
-        debugPrint('[BGM] 🌍 Audio context not supported: $e');
-      }
-
-      // Hapus ReleaseMode.loop agar tidak loop
-      await newPlayer.setReleaseMode(ReleaseMode.stop);
-
-      final absPath = SoundPaths.instance.backgroundSoundPaths[newBgm];
-      if (absPath == null) {
-        debugPrint('[BGM] 🌍 ❌ Error: BGM path not found for $newBgm');
+      // Get the path for the new BGM
+      final path = SoundPaths.instance.backgroundSoundPaths[newBgm];
+      if (path == null) {
+        debugPrint('[BGM] 🌍 ❌ Path not found for BGM: $newBgm');
         return;
       }
-      final relPath = _relative(absPath);
-      debugPrint('[BGM] 🌍 Loading BGM from path: $relPath');
 
-      await newPlayer.setSource(AssetSource(relPath));
+      final rel = _relative(path);
 
-      // Setup completion listener untuk auto-increment track
-      newPlayer.onPlayerComplete.listen((_) {
-        debugPrint('[BGM] 🌍 Track completed, moving to next track');
-        _incrementCounter();
-        _startGlobalBGM();
-      });
+      try {
+        // Set empty prefix and play BGM with looping
+        FlameAudio.audioCache.prefix = '';
+        await FlameAudio.bgm.play(rel, volume: _currentVol);
 
-      // Apply current duck state
-      final initialVolume = _duckCounter > 0 ? _duckVolume : _baseVolume;
-      await newPlayer.setVolume(initialVolume);
-      await newPlayer.resume();
+        _globalCurrentSound = newBgm;
+        debugPrint('[BGM] 🌍 ✅ Global BGM started: $newBgm');
 
-      _globalPlayer = newPlayer;
-      _globalCurrentSound = newBgm;
-      _currentVol = initialVolume;
-
-      debugPrint('[BGM] 🌍 Global BGM switched to: $newBgm');
+        // Setup completion listener for track progression
+        FlameAudio.bgm.audioPlayer.onPlayerComplete.listen((_) {
+          _onGlobalTrackComplete();
+        });
+      } catch (e) {
+        debugPrint('[BGM] 🌍 ❌ Error playing global BGM: $e');
+      }
     } catch (e) {
-      debugPrint('[BGM] 🌍 ❌ Error switching global BGM: $e');
-      debugPrint('[BGM] 🌍 Stack trace: ${StackTrace.current}');
+      debugPrint('[BGM] 🌍 ❌ Error in _switchToGlobalBgm: $e');
     }
+  }
+
+  void _onGlobalTrackComplete() {
+    debugPrint('[BGM] 🌍 Track completed, moving to next track');
+    _incrementCounter();
+    _startGlobalBGM();
   }
 
   void _incrementCounter() {
@@ -761,19 +712,20 @@ class BgmManager {
 
   /* ── NAVIGATION CONTROL ── */
   void pauseForNavigation() {
-    debugPrint('[BGM] Pause for navigation');
-    _isPausedForNavigation = true;
-    _current?.pause();
-    _globalPlayer?.pause();
+    if (!_isPausedForNavigation) {
+      _isPausedForNavigation = true;
+      debugPrint('[BGM] ⏸️ Pausing for navigation');
+
+      FlameAudio.bgm.pause();
+    }
   }
 
   void resumeFromNavigation() {
-    debugPrint('[BGM] Resume from navigation');
-    _isPausedForNavigation = false;
-    if (_current != null && _currentSound != null) {
-      _current!.resume();
-    } else if (_globalPlayer != null && _globalCurrentSound != null) {
-      _globalPlayer!.resume();
+    if (_isPausedForNavigation) {
+      _isPausedForNavigation = false;
+      debugPrint('[BGM] ▶️ Resuming from navigation');
+
+      FlameAudio.bgm.resume();
     }
   }
 
@@ -786,18 +738,13 @@ class BgmManager {
 
     if (_duckCounter == 1) {
       // Pertama kali di-duck, turunkan volume tapi pastikan tetap playing
-      final activePlayer = _current ?? _globalPlayer;
-      if (activePlayer != null) {
-        debugPrint('[BGM] 🦆 Player exists, starting duck...');
-        _setVolumeSmooth(_duckVolume, fast: true);
+      debugPrint('[BGM] 🦆 Starting duck...');
+      _setVolumeSmooth(_duckVolume, fast: true);
 
-        // Pastikan BGM tidak di-pause oleh sistem
-        if (!_isPausedForNavigation) {
-          activePlayer.resume(); // Force resume jika terpause
-          debugPrint('[BGM] 🦆 Force resumed BGM player');
-        }
-      } else {
-        debugPrint('[BGM] 🦆 ❌ No current player to duck!');
+      // Pastikan BGM tidak di-pause oleh sistem
+      if (!_isPausedForNavigation) {
+        FlameAudio.bgm.resume(); // Force resume jika terpause
+        debugPrint('[BGM] 🦆 Force resumed BGM player');
       }
     } else {
       debugPrint('[BGM] 🦆 Already ducked, counter: $_duckCounter');
@@ -812,24 +759,19 @@ class BgmManager {
       debugPrint('[BGM] 🦆 Target restore volume: $_baseVolume');
 
       if (_duckCounter == 0) {
-        final activePlayer = _current ?? _globalPlayer;
-        if (activePlayer != null) {
-          debugPrint('[BGM] 🦆 Player exists, restoring volume...');
+        debugPrint('[BGM] 🦆 Restoring volume...');
 
-          // Delay sedikit sebelum restore untuk memastikan SFX benar-benar selesai
-          Timer(const Duration(milliseconds: 50), () {
-            // Kembali ke volume normal
-            _setVolumeSmooth(_baseVolume, fast: false);
+        // Delay sedikit sebelum restore untuk memastikan SFX benar-benar selesai
+        Timer(const Duration(milliseconds: 50), () {
+          // Kembali ke volume normal
+          _setVolumeSmooth(_baseVolume, fast: false);
 
-            // Pastikan BGM masih playing
-            if (!_isPausedForNavigation && activePlayer != null) {
-              activePlayer.resume();
-              debugPrint('[BGM] 🦆 Force resumed BGM after restore');
-            }
-          });
-        } else {
-          debugPrint('[BGM] 🦆 ❌ No current player to restore!');
-        }
+          // Pastikan BGM masih playing
+          if (!_isPausedForNavigation) {
+            FlameAudio.bgm.resume();
+            debugPrint('[BGM] 🦆 Force resumed BGM after restore');
+          }
+        });
       } else {
         debugPrint('[BGM] 🦆 Still ducked, counter: $_duckCounter');
       }
@@ -846,17 +788,6 @@ class BgmManager {
     // Cancel existing animation
     _volumeAnimationTimer?.cancel();
 
-    // Get active player (specific BGM takes priority over global)
-    final activePlayer = _current ?? _globalPlayer;
-
-    // Kalau belum ada BGM, simpan target saja
-    if (activePlayer == null) {
-      debugPrint('[BGM] 🔊 ❌ No current player for volume change');
-      _currentVol = targetVol;
-      _baseVolume = targetVol;
-      return;
-    }
-
     // Jika volume sudah sama, skip animation
     if ((_currentVol - targetVol).abs() < 0.01) {
       debugPrint('[BGM] 🔊 ✅ Volume already at target, skipping animation');
@@ -865,7 +796,7 @@ class BgmManager {
 
     // Try direct volume set first as fallback mechanism
     try {
-      activePlayer.setVolume(targetVol);
+      FlameAudio.bgm.audioPlayer.setVolume(targetVol);
       _currentVol = targetVol;
       debugPrint(
           '[BGM] 🔊 ⚡ Direct volume set successful: ${targetVol.toStringAsFixed(2)}');
@@ -888,12 +819,6 @@ class BgmManager {
         '[BGM] 🔊 Starting volume animation: $steps steps, ${stepDuration.inMilliseconds}ms each');
 
     void animate() {
-      final currentActivePlayer = _current ?? _globalPlayer;
-      if (currentActivePlayer == null) {
-        debugPrint('[BGM] 🔊 ❌ Player disappeared during animation');
-        return;
-      }
-
       currentStep++;
       final progress = currentStep / steps;
 
@@ -901,7 +826,7 @@ class BgmManager {
         // Animasi selesai - ensure final volume is set
         _currentVol = targetVol;
         try {
-          currentActivePlayer.setVolume(_currentVol);
+          FlameAudio.bgm.audioPlayer.setVolume(_currentVol);
           debugPrint(
               '[BGM] 🔊 ✅ Animation complete: ${_currentVol.toStringAsFixed(2)}');
           _logVol(_currentVol);
@@ -916,7 +841,7 @@ class BgmManager {
       final newVol = startVol + (targetVol - startVol) * easedProgress;
 
       try {
-        currentActivePlayer.setVolume(newVol);
+        FlameAudio.bgm.audioPlayer.setVolume(newVol);
         _currentVol = newVol;
         debugPrint(
             '[BGM] 🔊 Step $currentStep/$steps: ${_currentVol.toStringAsFixed(2)}');
@@ -973,7 +898,7 @@ class BgmManager {
       debugPrint('[BGM] Switching to: $top');
 
       // Stop global BGM when specific BGM starts
-      if (_globalPlayer != null) {
+      if (_globalCurrentSound != null) {
         await _stopGlobalBGM();
       }
 
@@ -984,11 +909,9 @@ class BgmManager {
   }
 
   Future<void> _stopCurrent() async {
-    if (_current != null) {
+    if (_currentSound != null) {
       _volumeAnimationTimer?.cancel();
-      await _current!.stop();
-      await _current!.dispose();
-      _current = null;
+      await FlameAudio.bgm.stop();
       _currentSound = null;
       _currentVol = _baseVolume;
     }
@@ -996,85 +919,47 @@ class BgmManager {
 
   Future<void> _switchToBgm(BackgroundSound newBgm) async {
     try {
-      final newPlayer = AudioPlayer();
+      debugPrint('[BGM] 🎵 Switching to: $newBgm');
 
-      // Try to set audio context untuk BGM - keep audio focus
-      try {
-        await newPlayer.setAudioContext(
-          AudioContext(
-            android: AudioContextAndroid(
-              isSpeakerphoneOn: false,
-              stayAwake: true,
-              contentType: AndroidContentType.music,
-              usageType: AndroidUsageType.game,
-              audioFocus: AndroidAudioFocus.gain, // Keep audio focus untuk BGM
-            ),
-          ),
-        );
-      } catch (e) {
-        debugPrint('[BGM] Audio context not supported: $e');
-        // Continue without audio context if not supported
+      // Stop current BGM
+      await FlameAudio.bgm.stop();
+      _currentSound = null;
+
+      // Stop global BGM if it's playing
+      if (_isGlobalBGMActive && _globalCurrentSound != null) {
+        await _stopGlobalBGM();
       }
 
-      await newPlayer.setReleaseMode(ReleaseMode.loop);
+      // Get the path for the new BGM
+      final path = SoundPaths.instance.backgroundSoundPaths[newBgm];
+      if (path == null) {
+        debugPrint('[BGM] ❌ Path not found for BGM: $newBgm');
+        return;
+      }
 
-      final absPath = SoundPaths.instance.backgroundSoundPaths[newBgm]!;
-      final relPath = _relative(absPath);
+      final rel = _relative(path);
 
-      await newPlayer.setSource(AssetSource(relPath));
-      await newPlayer.setVolume(0); // Start dengan volume 0
-      await newPlayer.resume();
+      try {
+        // Set empty prefix and play BGM with looping
+        FlameAudio.audioCache.prefix = '';
 
-      // Cross-fade dengan timing yang lebih presisi
-      final oldPlayer = _current;
-      _current = newPlayer;
-      _currentSound = newBgm;
+        // Start with fade in effect
+        await FlameAudio.bgm.play(rel, volume: 0.0);
+        _currentSound = newBgm;
 
-      if (oldPlayer != null) {
-        // Cross-fade
-        await _crossFade(oldPlayer, newPlayer);
-      } else {
-        // Fade in tanpa cross-fade
-        await _fadeIn(newPlayer);
+        // Fade in to current volume
+        await _fadeIn();
+
+        debugPrint('[BGM] ✅ BGM started: $newBgm');
+      } catch (e) {
+        debugPrint('[BGM] ❌ Error playing BGM: $e');
       }
     } catch (e) {
-      debugPrint('[BGM] Error switching BGM: $e');
+      debugPrint('[BGM] ❌ Error in _switchToBgm: $e');
     }
   }
 
-  Future<void> _crossFade(AudioPlayer oldPlayer, AudioPlayer newPlayer) async {
-    const steps = 15;
-    final stepDuration = Duration(milliseconds: _xFade.inMilliseconds ~/ steps);
-
-    for (int i = 0; i <= steps; i++) {
-      final progress = i / steps;
-      final oldVol = (1 - progress) * _currentVol;
-
-      // Apply current duck state to new volume
-      final targetNewVol = _duckCounter > 0 ? _duckVolume : _baseVolume;
-      final newVol = progress * targetNewVol;
-
-      try {
-        await oldPlayer.setVolume(oldVol);
-        await newPlayer.setVolume(newVol);
-
-        if (i == steps) {
-          // Cross-fade selesai
-          _currentVol = targetNewVol;
-          await oldPlayer.stop();
-          await oldPlayer.dispose();
-          debugPrint('[BGM] Cross-fade completed');
-        } else {
-          await Future.delayed(stepDuration);
-        }
-      } catch (e) {
-        debugPrint('[BGM] Error during cross-fade step $i: $e');
-        break;
-      }
-    }
-  }
-
-  Future<void> _fadeIn(AudioPlayer player) async {
+  Future<void> _fadeIn() async {
     const steps = 10;
     const stepDuration = Duration(milliseconds: 30);
 
@@ -1086,7 +971,7 @@ class BgmManager {
       final vol = progress * targetVol;
 
       try {
-        await player.setVolume(vol);
+        FlameAudio.bgm.audioPlayer.setVolume(vol);
         if (i < steps) {
           await Future.delayed(stepDuration);
         }
@@ -1103,6 +988,9 @@ class BgmManager {
   /* ── PRELOAD ── */
   Future<void> preloadAll() async {
     try {
+      // Set empty prefix first
+      FlameAudio.audioCache.prefix = '';
+
       final allPaths =
           SoundPaths.instance.getAllSoundPaths().map(_relative).toList();
 
@@ -1123,14 +1011,12 @@ class BgmManager {
   }
 
   void pause() {
-    _current?.pause();
-    _globalPlayer?.pause();
+    FlameAudio.bgm.pause();
   }
 
   void resume() {
     if (!_isPausedForNavigation) {
-      _current?.resume();
-      _globalPlayer?.resume();
+      FlameAudio.bgm.resume();
     }
   }
 
@@ -1153,53 +1039,38 @@ class BgmManager {
   /// Force BGM to resume if it gets paused unexpectedly
   void forceResume() {
     if (!_isPausedForNavigation) {
-      if (_current != null) {
-        debugPrint('[BGM] Force resume specific BGM');
-        _current!.resume();
-      } else if (_globalPlayer != null) {
-        debugPrint('[BGM] Force resume global BGM');
-        _globalPlayer!.resume();
-      }
+      debugPrint('[BGM] Force resume BGM');
+      FlameAudio.bgm.resume();
     }
   }
 
   /// Get current player state for debugging
   Future<void> checkPlayerState() async {
-    final activePlayer = _current ?? _globalPlayer;
-    if (activePlayer != null) {
-      try {
-        final state = activePlayer.state;
-        final position = await activePlayer.getCurrentPosition();
-        final duration = await activePlayer.getDuration();
-        debugPrint('[BGM] 🎮 Player state: $state');
-        debugPrint(
-            '[BGM] 🎮 Position: ${position?.inMilliseconds}ms / ${duration?.inMilliseconds}ms');
-        debugPrint('[BGM] 🎮 Current volume in manager: $_currentVol');
-        debugPrint('[BGM] 🎮 Base volume: $_baseVolume');
-        debugPrint('[BGM] 🎮 Duck counter: $_duckCounter');
-        debugPrint('[BGM] 🎮 Is global: ${_current == null ? 'YES' : 'NO'}');
-      } catch (e) {
-        debugPrint('[BGM] 🎮 ❌ Error checking player state: $e');
-      }
-    } else {
-      debugPrint('[BGM] 🎮 ❌ No current player');
+    try {
+      final state = FlameAudio.bgm.audioPlayer.state;
+      final position = await FlameAudio.bgm.audioPlayer.getCurrentPosition();
+      final duration = await FlameAudio.bgm.audioPlayer.getDuration();
+      debugPrint('[BGM] 🎮 Player state: $state');
+      debugPrint(
+          '[BGM] 🎮 Position: ${position?.inMilliseconds}ms / ${duration?.inMilliseconds}ms');
+      debugPrint('[BGM] 🎮 Current volume in manager: $_currentVol');
+      debugPrint('[BGM] 🎮 Base volume: $_baseVolume');
+      debugPrint('[BGM] 🎮 Duck counter: $_duckCounter');
+      debugPrint('[BGM] 🎮 Is global: ${_currentSound == null ? 'YES' : 'NO'}');
+    } catch (e) {
+      debugPrint('[BGM] 🎮 ❌ Error checking player state: $e');
     }
   }
 
   /// Test volume setting directly
   Future<void> testVolume(double vol) async {
-    final activePlayer = _current ?? _globalPlayer;
-    if (activePlayer != null) {
-      try {
-        debugPrint('[BGM] 🧪 Testing direct volume set: $vol');
-        await activePlayer.setVolume(vol);
-        _currentVol = vol;
-        debugPrint('[BGM] 🧪 ✅ Direct volume set successful');
-      } catch (e) {
-        debugPrint('[BGM] 🧪 ❌ Direct volume set failed: $e');
-      }
-    } else {
-      debugPrint('[BGM] 🧪 ❌ No player to test volume');
+    try {
+      debugPrint('[BGM] 🧪 Testing direct volume set: $vol');
+      await FlameAudio.bgm.audioPlayer.setVolume(vol);
+      _currentVol = vol;
+      debugPrint('[BGM] 🧪 ✅ Direct volume set successful');
+    } catch (e) {
+      debugPrint('[BGM] 🧪 ❌ Direct volume set failed: $e');
     }
   }
 
@@ -1220,7 +1091,7 @@ class BgmManager {
       await _saveGlobalBGMState();
 
       // If currently playing global BGM, switch to new track
-      if (_stack.isEmpty && _globalPlayer != null) {
+      if (_stack.isEmpty && _globalCurrentSound != null) {
         await _startGlobalBGM();
       }
       debugPrint('[BGM] 🌍 Manually switched to track: $_currentTrackIndex');
@@ -1234,7 +1105,7 @@ class BgmManager {
       await _saveGlobalBGMState();
 
       // If currently playing global BGM, switch to new track
-      if (_stack.isEmpty && _globalPlayer != null) {
+      if (_stack.isEmpty && _globalCurrentSound != null) {
         await _startGlobalBGM();
       }
       debugPrint('[BGM] 🌍 Manually switched to track: $_currentTrackIndex');
@@ -1251,8 +1122,22 @@ class BgmManager {
           ? _globalBGMList[_currentTrackIndex]
           : null,
       'counterSound': _globalCounterSound,
-      'isPlaying': _globalPlayer != null && _stack.isEmpty,
+      'isPlaying': _globalCurrentSound != null && _stack.isEmpty,
     };
+  }
+
+  void dispose() {
+    debugPrint('[BGM] 🗑️ Disposing BGM Manager');
+    _volumeAnimationTimer?.cancel();
+    _stopCurrent();
+    _stopGlobalBGM();
+    _stack.clear();
+    _globalBGMList.clear();
+    _isGlobalBGMActive = false;
+    _isPausedForNavigation = false;
+
+    // Clear flame audio cache
+    FlameAudio.audioCache.clearAll();
   }
 }
 
