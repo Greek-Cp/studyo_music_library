@@ -1,37 +1,20 @@
-import 'package:studyo_music_library/core/sound_manager/bgm_manager.dart';
-import 'package:studyo_music_library/core/sound_manager/sound_enums.dart';
-import 'package:studyo_music_library/core/sound_manager/sound_paths.dart';
+// Extension untuk Widget terkait sound
+import 'package:flutter/material.dart';
+import 'sound_enums.dart';
+import 'sound_paths.dart';
+import 'bgm_manager.dart';
+import 'sound_widgets.dart';
+import 'bgm_wrapper.dart';
+import 'bgm_global_wrapper.dart';
 
-/// ─────────────────────────────────────────────────────────────────────────────
-///  SOUND CONTROLLER
-class SoundController {
-  static final SoundController instance = SoundController._();
-  SoundController._();
-
-  /// Play any sound with specified type and volume
-  ///
-  /// Example usage:
-  /// ```dart
-  /// // Play whoosh sound
-  /// await SoundController.instance.playSound(
-  ///   WhooshSound.longwhoosh,
-  ///   SoundType.whoosh,
-  ///   volume: 1.0
-  /// );
-  ///
-  /// // Play BGM
-  /// await SoundController.instance.playSound(
-  ///   SoundBackground.yourBGM,
-  ///   SoundType.background,
-  ///   volume: 1.0
-  /// );
-  /// ```
-  Future<void> playSound(
+extension SoundExtension on Widget {
+  Widget addSound(
     dynamic sound,
     SoundType type, {
     double volume = 1.0,
-  }) async {
-    String path;
+    bool isDragWidget = false,
+  }) {
+    late final String path;
     switch (type) {
       case SoundType.background:
         path =
@@ -118,17 +101,29 @@ class SoundController {
         path = SoundPaths.instance.whooshSoundPaths[sound as SoundWhoosh]!;
         break;
     }
-
-    await playOneShot(path, volume: volume);
+    if (isDragWidget) {
+      return DragSoundWrapper(
+        path: path,
+        volume: volume,
+        type: type,
+        child: this,
+      );
+    }
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTapDown: (_) => playOneShot(path, volume: volume),
+      child: this,
+    );
   }
+}
 
-  /// Set global BGM list
-  Future<void> setGlobalBGM(List<SoundBackground> listSound) async {
-    BgmManager.instance.setGlobalBGM(listSound);
-  }
+extension BgmExtension on Widget {
+  Widget addBGM(SoundBackground bgm) => BgmWrapper(child: this, bgm: bgm);
+}
 
-  /// Stop all BGM
-  Future<void> stopBGM() async {
-    BgmManager.instance.clearGlobalBGM();
-  }
+extension BgmGlobalExtension on Widget {
+  Widget addBGMGlobal(List<SoundBackground> listSound) => BgmGlobalWrapper(
+        child: this,
+        listSound: listSound,
+      );
 }
