@@ -52,121 +52,6 @@ void _logVol(double v) =>
 
 /// ─────────────────────────────────────────────────────────────────────────────
 ///  ONE-SHOT PLAY + DUCKING HOOK
-class SoundQueue {
-  static final SoundQueue instance = SoundQueue._();
-  SoundQueue._();
-
-  final _queue = <_QueuedSound>[];
-  bool _isPlaying = false;
-  static const _maxConcurrent = 4;
-  int _currentPlaying = 0;
-  Timer? _processTimer;
-  final Map<String, DateTime> _lastPlayTimes = {};
-
-  // Prioritas suara (semakin tinggi semakin prioritas)
-  static const _priorityClick = 1;
-  static const _priorityDrag = 2;
-  static const _priorityNotification = 3;
-
-  // Minimum interval antara suara yang sama (dalam milliseconds)
-  static const _minIntervalSameSound = 100;
-  static const _minIntervalDifferentSound = 50;
-
-  Future<void> play(String path,
-      {double volume = 1.0, SoundType type = SoundType.review}) async {
-    final now = DateTime.now();
-    final lastPlayTime = _lastPlayTimes[path];
-
-    // Cek interval minimum berdasarkan tipe suara
-    if (lastPlayTime != null) {
-      final interval = type == SoundType.messages
-          ? _minIntervalSameSound
-          : _minIntervalDifferentSound;
-      if (now.difference(lastPlayTime).inMilliseconds < interval) {
-        return; // Skip tanpa log untuk mengurangi overhead
-      }
-    }
-
-    // Update last play time
-    _lastPlayTimes[path] = now;
-
-    // Tentukan prioritas berdasarkan tipe suara
-    int priority;
-    switch (type) {
-      case SoundType.success:
-        priority = _priorityNotification;
-        break;
-      case SoundType.success:
-        priority = _priorityClick;
-        break;
-      case SoundType.success:
-        priority = _priorityDrag;
-        break;
-      default:
-        priority = _priorityNotification;
-    }
-
-    // Tambahkan ke antrian
-    _queue.add(_QueuedSound(path: path, volume: volume, priority: priority));
-
-    // Sort antrian berdasarkan prioritas
-    _queue.sort((a, b) => b.priority.compareTo(a.priority));
-
-    // Mulai proses antrian jika belum berjalan
-    if (!_isPlaying) {
-      _isPlaying = true;
-      _processQueue();
-    }
-  }
-
-  void _processQueue() {
-    if (_queue.isEmpty) {
-      _isPlaying = false;
-      return;
-    }
-
-    if (_currentPlaying >= _maxConcurrent) {
-      // Jika masih penuh, coba lagi setelah 50ms
-      _processTimer?.cancel();
-      _processTimer = Timer(const Duration(milliseconds: 50), _processQueue);
-      return;
-    }
-
-    final sound = _queue.removeAt(0);
-    _currentPlaying++;
-
-    // Play sound tanpa menunggu selesai
-    playOneShot(sound.path, volume: sound.volume).then((_) {
-      _currentPlaying--;
-      // Proses suara berikutnya
-      _processQueue();
-    }).catchError((_) {
-      _currentPlaying--;
-      _processQueue();
-    });
-  }
-
-  void dispose() {
-    _processTimer?.cancel();
-    _queue.clear();
-    _currentPlaying = 0;
-    _isPlaying = false;
-    _lastPlayTimes.clear();
-  }
-}
-
-class _QueuedSound {
-  final String path;
-  final double volume;
-  final int priority;
-
-  _QueuedSound({
-    required this.path,
-    required this.volume,
-    required this.priority,
-  });
-}
-
 Future<void> playOneShot(String absPath, {double volume = 1}) async {
   try {
     BgmManager.instance.duckStart();
@@ -180,7 +65,13 @@ Future<void> playOneShot(String absPath, {double volume = 1}) async {
       player.audioCache =
           AudioCache(prefix: 'packages/studyo_music_library/assets/');
 
+      // Preload audio untuk mengurangi delay
+      await player.audioCache?.load(rel);
+
+      // Set mode low latency untuk responsivitas maksimal
       await player.setPlayerMode(PlayerMode.lowLatency);
+
+      // Optimize audio context untuk responsivitas
       await player.setAudioContext(
         AudioContext(
           android: AudioContextAndroid(
@@ -188,34 +79,37 @@ Future<void> playOneShot(String absPath, {double volume = 1}) async {
             stayAwake: false,
             contentType: AndroidContentType.sonification,
             usageType: AndroidUsageType.game,
-            audioFocus: AndroidAudioFocus.none,
+            audioFocus: AndroidAudioFocus.gainTransientMayDuck,
           ),
         ),
       );
 
+      // Set source dan volume sebelum resume untuk mengurangi delay
       await player.setSource(AssetSource(rel));
       await player.setVolume(volume);
+
+      // Resume segera setelah setup selesai
       await player.resume();
 
-      // Setup auto-cleanup
+      // Setup auto-cleanup yang lebih cepat
       player.onPlayerComplete.listen((_) {
         player?.dispose();
         BgmManager.instance.duckEnd();
       });
 
-      // Fallback cleanup
-      Timer(const Duration(seconds: 3), () {
+      // Fallback cleanup yang lebih cepat
+      Timer(const Duration(milliseconds: 500), () {
         player?.dispose();
         BgmManager.instance.duckEnd();
       });
     } catch (e) {
-      // Fallback ke FlameAudio
+      // Fallback ke FlameAudio dengan optimisasi
       try {
         final flamePlayer = await FlameAudio.play(rel, volume: volume);
         flamePlayer.onPlayerComplete.listen((_) {
           BgmManager.instance.duckEnd();
         });
-        Timer(const Duration(seconds: 3), () {
+        Timer(const Duration(milliseconds: 500), () {
           BgmManager.instance.duckEnd();
         });
       } catch (e) {
@@ -352,8 +246,7 @@ extension SoundExtension on Widget {
     // Default (tap)
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
-      onTapDown: (_) =>
-          SoundQueue.instance.play(path, volume: volume, type: type),
+      onTapDown: (_) => playOneShot(path, volume: volume),
       child: this,
     );
   }
@@ -386,9 +279,6 @@ class _DragSoundWrapperState extends State<_DragSoundWrapper> {
       300.0; // Minimum velocity untuk memainkan whoosh
   static const _maxVelocityThreshold =
       2000.0; // Maximum velocity untuk scaling volume
-  static const _whooshCooldown =
-      Duration(milliseconds: 150); // Cooldown antara whoosh sounds
-  DateTime? _lastWhooshTime;
   bool _hasPlayedWhooshInCurrentDrag =
       false; // Flag untuk memastikan whoosh hanya dimainkan sekali per drag
 
@@ -398,8 +288,7 @@ class _DragSoundWrapperState extends State<_DragSoundWrapper> {
         now.difference(_lastPlayTime!) > _minInterval) {
       _lastPlayTime = now;
       _lastPosition = event.position;
-      SoundQueue.instance
-          .play(widget.path, volume: widget.volume, type: widget.type);
+      playOneShot(widget.path, volume: widget.volume);
     }
   }
 
@@ -418,27 +307,28 @@ class _DragSoundWrapperState extends State<_DragSoundWrapper> {
         final velocity = deltaPosition.distance / deltaTime;
         _lastVelocity = velocity;
 
-        // Hanya mainkan whoosh sekali per sesi drag dan jika kecepatan cukup tinggi
+        // Mainkan whoosh hanya saat drag dengan kecepatan tinggi
         if (!_hasPlayedWhooshInCurrentDrag &&
-            velocity > _minVelocityThreshold) {
-          // Scale volume berdasarkan kecepatan
+            velocity > _minVelocityThreshold &&
+            deltaPosition.distance > 5) {
+          // Minimal jarak pergerakan
           final volumeScale = math.min(
               (velocity - _minVelocityThreshold) /
                   (_maxVelocityThreshold - _minVelocityThreshold),
               1.0);
-
-          // Volume minimum 0.3, maximum 0.7
           final whooshVolume = 0.3 + (volumeScale * 0.4);
 
-          SoundQueue.instance.play(
-            SoundPaths.instance.whooshSoundPaths[SoundWhoosh.longwhoosh]!,
-            volume: widget.volume * whooshVolume,
-            type: SoundType.whoosh,
-          );
+          // Hanya mainkan whoosh jika kecepatan cukup tinggi
+          if (velocity > 10) {
+            // Threshold kecepatan yang lebih tinggi
+            playOneShot(
+              SoundPaths
+                  .instance.whooshSoundPaths[SoundWhoosh.whooshAccelerate]!,
+              volume: widget.volume * whooshVolume,
+            );
 
-          _hasPlayedWhooshInCurrentDrag =
-              true; // Set flag agar tidak dimainkan lagi dalam drag ini
-          _lastWhooshTime = now;
+            _hasPlayedWhooshInCurrentDrag = true;
+          }
         }
       }
       _lastPosition = event.position;
@@ -452,10 +342,9 @@ class _DragSoundWrapperState extends State<_DragSoundWrapper> {
       final dropVolume = math.min(_lastVelocity / _maxVelocityThreshold, 1.0);
       final clickVolume = 0.4 + (dropVolume * 0.3); // Volume antara 0.4 - 0.7
 
-      SoundQueue.instance.play(
-        SoundPaths.instance.clipSoundPaths[SoundClip.containerdrop]!,
+      playOneShot(
+        SoundPaths.instance.clipSoundPaths[SoundClip.itemGetsDropped]!,
         volume: widget.volume * clickVolume,
-        type: SoundType.clip,
       );
     }
 
@@ -615,7 +504,7 @@ class BgmManager {
   double _baseVolume = 1.0; // Volume dasar BGM
   double _currentVol = 1.0; // Volume aktual saat ini
   double _duckVolume =
-      0.6; // Volume saat di-duck (60% - lebih tinggi dari sebelumnya)
+      0.1; // Volume saat di-duck (60% - lebih tinggi dari sebelumnya)
 
   /* navigation state */
   bool _isPausedForNavigation = false;
@@ -1430,7 +1319,7 @@ class SoundController {
         break;
     }
 
-    await SoundQueue.instance.play(path, volume: volume, type: type);
+    await playOneShot(path, volume: volume);
   }
 
   /// Set global BGM list

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../bgm_manager.dart';
 
 String relative(String full) =>
-    full.replaceFirst('packages/studyo_music_library/assets/', '');
+    full.replaceFirst('packages/studyo_musi\c_library/assets/', '');
 
 void logVol(double v) =>
     debugPrint('[BGM] 🔊 volume → ${v.toStringAsFixed(2)}');
