@@ -98,13 +98,12 @@ class MainPage extends StatelessWidget {
             ],
           )),
     ).addBGMGlobal([
-      BackgroundSound.balance,
-      BackgroundSound.bonus,
-      BackgroundSound.journal,
-      BackgroundSound.journal2,
-      BackgroundSound.profile,
-      BackgroundSound.teamup,
-      BackgroundSound.teamup_1,
+      SoundBackground.balance,
+      SoundBackground.bonus,
+      SoundBackground.journal,
+      SoundBackground.journal2,
+      SoundBackground.profile,
+      SoundBackground.teamup,
     ]);
   }
 }
@@ -131,7 +130,7 @@ class SoundTestPage extends StatelessWidget {
                 color: Colors.blue.shade100,
                 borderRadius: BorderRadius.circular(8),
               ),
-            ).addSound(TAPSound.tap, SoundType.tap),
+            ).addSound(SoundTAP.tap, SoundType.tap),
 
             // Draggable widget with sound
             Draggable<String>(
@@ -154,7 +153,7 @@ class SoundTestPage extends StatelessWidget {
                 color: Colors.green,
                 child: const Center(child: Text('Drag Me')),
               ),
-            ).addSound(TAPSound.tap, SoundType.tap, isDragWidget: true),
+            ).addSound(SoundTAP.tap, SoundType.tap, isDragWidget: true),
 
             const SizedBox(height: 16),
 
@@ -169,7 +168,7 @@ class SoundTestPage extends StatelessWidget {
               child: const Center(
                 child: Text('This widget plays SFX when it appears'),
               ),
-            ).addSound(WhooshSound.longwhoosh, SoundType.whoosh),
+            ).addSound(SoundWhoosh.longwhoosh, SoundType.whoosh),
 
             const SizedBox(height: 16),
 
@@ -184,7 +183,7 @@ class SoundTestPage extends StatelessWidget {
               child: const Center(
                 child: Text('This widget plays notification when it appears'),
               ),
-            ).addSound(ReviewSound.happy, SoundType.review),
+            ).addSound(SoundReview.happy, SoundType.review),
 
             const SizedBox(height: 16),
 
@@ -192,7 +191,7 @@ class SoundTestPage extends StatelessWidget {
             ElevatedButton(
               onPressed: () {},
               child: const Text('Show Notification'),
-            ).addSound(MessagesSound.message, SoundType.messages),
+            ).addSound(SoundMessages.message, SoundType.messages),
 
             const SizedBox(height: 16),
 
@@ -203,7 +202,7 @@ class SoundTestPage extends StatelessWidget {
                 subtitle: const Text('Tap to play sound effect'),
                 onTap: () {},
               ),
-            ).addSound(WhooshSound.longwhoosh, SoundType.whoosh),
+            ).addSound(SoundWhoosh.longwhoosh, SoundType.whoosh),
 
             const SizedBox(height: 16),
 
@@ -234,17 +233,17 @@ class SoundTestPage extends StatelessWidget {
             children: [
               _buildSoundButton(
                 'Click',
-                TAPSound.tap,
+                SoundTAP.tap,
                 SoundType.tap,
               ),
               _buildSoundButton(
                 'SFX',
-                WhooshSound.longwhoosh,
+                SoundWhoosh.longwhoosh,
                 SoundType.whoosh,
               ),
               _buildSoundButton(
                 'Notify',
-                ReviewSound.happy,
+                SoundReview.happy,
                 SoundType.review,
               ),
             ],
@@ -358,13 +357,13 @@ class _PageAState extends State<PageA> {
     // Play appropriate sound
     if (isCorrect) {
       SoundController.instance.playSound(
-        SuccessSound.winning,
+        SoundSuccess.winning,
         SoundType.success,
         volume: 1.0,
       );
     } else {
       SoundController.instance.playSound(
-        DenySound.delete,
+        SoundDeny.delete,
         SoundType.deny,
         volume: 1.0,
       );
@@ -473,7 +472,7 @@ class _PageAState extends State<PageA> {
                                   ),
                                 ),
                               ).addSound(
-                                WhooshSound.longwhoosh,
+                                SoundWhoosh.longwhoosh,
                                 SoundType.whoosh,
                                 isDragWidget: true,
                               );
@@ -529,7 +528,7 @@ class _PageAState extends State<PageA> {
                   droppedItems.clear();
                 });
                 SoundController.instance.playSound(
-                  TransitionsSound.opener,
+                  SoundTransitions.opener,
                   SoundType.transitions,
                   volume: 1.0,
                 );
@@ -539,7 +538,7 @@ class _PageAState extends State<PageA> {
           ),
         ],
       ),
-    ).addBGM(BackgroundSound.tetris);
+    ).addBGM(SoundBackground.tetris);
   }
 
   Widget _buildDropTarget(String targetId, String emoji) {
@@ -625,7 +624,7 @@ class PageB extends StatelessWidget {
           ],
         ),
       ),
-    ).addBGM(BackgroundSound.profile);
+    ).addBGM(SoundBackground.profile);
   }
 }
 
@@ -665,7 +664,7 @@ class ManualTestPage extends StatelessWidget {
                     _buildSoundButton(
                       'Whoosh Sound',
                       () => SoundController.instance.playSound(
-                        WhooshSound.longwhoosh,
+                        SoundWhoosh.longwhoosh,
                         SoundType.whoosh,
                         volume: volume.value,
                       ),
@@ -673,7 +672,7 @@ class ManualTestPage extends StatelessWidget {
                     _buildSoundButton(
                       'Drop Sound',
                       () => SoundController.instance.playSound(
-                        ClipSound.containerdrop,
+                        SoundClip.containerdrop,
                         SoundType.clip,
                         volume: volume.value,
                       ),
@@ -681,7 +680,7 @@ class ManualTestPage extends StatelessWidget {
                     _buildSoundButton(
                       'Tap Sound',
                       () => SoundController.instance.playSound(
-                        TAPSound.tap,
+                        SoundTAP.tap,
                         SoundType.tap,
                         volume: volume.value,
                       ),
@@ -689,7 +688,7 @@ class ManualTestPage extends StatelessWidget {
                     _buildSoundButton(
                       'Message Sound',
                       () => SoundController.instance.playSound(
-                        MessagesSound.message,
+                        SoundMessages.message,
                         SoundType.messages,
                         volume: volume.value,
                       ),
@@ -697,7 +696,7 @@ class ManualTestPage extends StatelessWidget {
                     _buildSoundButton(
                       'Success Sound',
                       () => SoundController.instance.playSound(
-                        SuccessSound.winning,
+                        SoundSuccess.winning,
                         SoundType.success,
                         volume: volume.value,
                       ),
@@ -705,7 +704,7 @@ class ManualTestPage extends StatelessWidget {
                     _buildSoundButton(
                       'Deny Sound',
                       () => SoundController.instance.playSound(
-                        DenySound.delete,
+                        SoundDeny.delete,
                         SoundType.deny,
                         volume: volume.value,
                       ),
@@ -736,8 +735,8 @@ class ManualTestPage extends StatelessWidget {
                           child: ElevatedButton(
                             onPressed: () =>
                                 SoundController.instance.setGlobalBGM([
-                              BackgroundSound.journal,
-                              BackgroundSound.journal2,
+                              SoundBackground.journal,
+                              SoundBackground.journal2,
                             ]),
                             child: const Text('Start BGM'),
                           ),

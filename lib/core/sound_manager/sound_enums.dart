@@ -1,173 +1,287 @@
-/// Enum for click event sounds
-enum ClickSound {
-  gameClick,
-  selectClick,
-}
-
-/// Enum for sound effects
-enum SFXSound {
-  airWoosh,
-}
-
-/// Enum for notification sounds
-enum NotificationSound {
-  retroArcade,
-  mysteryAlert,
-}
-
 /// Enum for background sounds
-enum BackgroundSound {
+enum SoundBackground {
+  balance,
+  bonus,
+  bubbles,
+  curious,
+  curiousSituation,
   journal,
   journal2,
-  bonus,
-  teamup,
+  menu1,
+  menu2,
   profile,
-  bonus_1,
-  bubbles,
+  teamup,
   tetris,
-  balance,
-  profile_1,
-  teamup_1,
+}
+
+/// Enum for balance sounds
+enum SoundBalance {
+  hit,
+}
+
+/// Enum for bubble sounds
+enum SoundBubble {
+  bubblegetout,
+  fail,
+  friction,
+  move,
+  newbubble,
+  rightanswer,
+}
+
+/// Enum for cheering sounds
+enum SoundCheering {
+  applause41CrowdJam,
+  audienceCheeringLoop,
+  aLoopingCrowdScanding,
+  cheeringAndClappingSportFans,
+  childrenCheering,
+  childrenCheeringApplauding,
+  childrenCheeringYea,
+  childrenYellingYay,
+  childrenYellingYay2,
+  childrenYellingYay3,
+  kidsApplauding,
+  kidsCheeringYay,
+  rhytmicAudienceClappingLoopfull,
+  smallScreamyApplause,
+}
+
+/// Enum for click sounds
+enum SoundClick {
+  interfaceClick,
+  quirkyButton1,
+  quirkyButton2,
+  quirkyButton3,
+}
+
+/// Enum for clip sounds
+enum SoundClip {
+  awardHappy,
+  buttonMagicComplete,
+  cartoonRoughPlop,
+  connectGamePlop,
+  containerdrop,
+  elasticsnapstretchlowendwhompsmackcordO1ewa01,
+  fastArpPlucksDown,
+  itemGetsDropped,
+  machantqElectronicAddingMachinePressSingleGenhd100038,
+  pickup,
+  plopBulbSelect,
+  plopPopCartoonHit1,
+  plopPopCartoonHit2,
+  plopPopCartoonHit5,
+  plopPopCartoonHit7,
+  suctionplopBw,
+  tieclipsnapwhilebeingpulledoffcuhandleOrplp03,
 }
 
 /// Enum for coins sounds
-enum CoinsSound {
+enum SoundCoins {
+  casinoWinLoopEnd,
   coin1,
-  coin1_1,
-  coin1_2,
-  coin1_3,
-  coin1_4,
+  collectingCoins2,
+  collectCoin,
+  collectCoins1,
+  collectCoins2,
+  collectCoins3,
+  jackpotWinLoopEnd,
+  pickcoin,
   refund,
+  winSlotMachineLoopEnd,
 }
 
-/// Enum for resources sounds
-enum ResourcesSound {
-  starcollect,
-  food,
-  cleaning,
-  toys,
+/// Enum for deny sounds
+enum SoundDeny {
+  buttonScifiDevice,
+  cartoonThinJumpPlop,
+  confirmDenied,
+  delete,
+  denyFatLow,
+  gentleOkPluckDing,
+  interfaceSciFiDenyStabHard,
+  woodDiscreteNotifyAccessDeniedfull,
 }
 
-/// Enum for success sounds
-enum SuccessSound {
-  winning,
-  celebration,
-  completed,
-  completed_1,
-  completed_2,
-  celebration_1,
-  fanfare,
-  bonuswin,
-  celebration_2,
-  winning_1,
-  completed_3,
-  fanfare_1,
+/// Enum for fail sounds
+enum SoundFail {
+  buttonMagicEngage,
+  cartoonFailUp,
+  cuteCartoonFail,
+  funtimeCartoonFailure1,
+  funCartoonFail,
+  funLittleRetroFail,
+  pleasingGameFail,
 }
 
-/// Enum for transitions sounds
-enum TransitionsSound {
-  opener,
-  expand,
-  shrink,
+/// Enum for levelup sounds
+enum SoundLevelup {
+  gameWin1,
+  gameWin2,
+  gameWin3,
+  gameWin4,
+  levelUp,
+  levelUp1,
+  levelUp4,
+}
+
+/// Enum for login sounds
+enum SoundLogin {
+  sparklingLoginDing,
+}
+
+/// Enum for messages sounds
+enum SoundMessages {
+  message,
+}
+
+/// Enum for pets_cleaning sounds
+enum SoundPetsCleaning {
+  scrubbing,
+  shower,
+  spray,
+  towel,
+}
+
+/// Enum for pets_eat sounds
+enum SoundPetsEat {
+  cat,
+  dog,
+  owl,
+  rabbit,
+  squirrel,
 }
 
 /// Enum for pets_play sounds
-enum PetsPlaySound {
+enum SoundPetsPlay {
   cat,
   cat2,
   dog,
   dog2,
-  squirrel,
-  squirrel2,
-  rabbit,
-  rabbit2,
   owl,
   owl2,
-}
-
-/// Enum for pets_eat sounds
-enum PetsEatSound {
-  cat,
-  dog,
-  squirrel,
   rabbit,
-  owl,
+  rabbit2,
+  squirrel,
+  squirrel2,
 }
 
-/// Enum for pets_cleaning sounds
-enum PetsCleaningSound {
-  spray,
-  towel,
-  shower,
-  scrubbing,
+/// Enum for pets_short_reactions sounds
+enum SoundPetsShortReactions {
+  birdowlJba0346,
+  cartoonHappyDog1full,
+  cartoonHappyWinTwirlfull,
+  cartoonSquirrelLaughfull,
+  cartoonSquirrelLaughter,
+  cartoonSquirrelVoice02,
+  cartoonUnglyBirdHappyfull,
+  cuteCreaturePlayfulShoutfull,
+  femaleCat3,
+  squirrelJba02741,
 }
 
-/// Enum for bubble sounds
-enum BubbleSound {
-  newbubble,
-  move,
-  bubblegetout,
-  friction,
-  rightanswer,
-  fail,
+/// Enum for pickup sounds
+enum SoundPickup {
+  button1,
+  interfaceClick,
+  itemPickUp,
+  pickup1,
+  pickupUseItem2,
+  pickupUseItem3,
+  plop,
+  plopPack2,
+  plopPack3,
+  plopPack4,
 }
 
-/// Enum for tetris sounds
-enum TetrisSound {
-  select,
-  unselect,
-  right,
-  wrong,
-  allfound,
-  fall,
-  hit,
+/// Enum for reminders sounds
+enum SoundReminders {
+  mountainAudioWoodBlockRhythm1,
+  musichanddrumBw25557,
+  scoreTallyLoop02,
+  timeCountdownLoop,
 }
 
-/// Enum for whoosh sounds
-enum WhooshSound {
-  longwhoosh,
-  longwhoosh_1,
-  whooshmove,
-  turn,
-}
-
-/// Enum for balance sounds
-enum BalanceSound {
-  hit,
-}
-
-/// Enum for tap sounds
-enum TAPSound {
-  tap,
-  tap_1,
-  tap_2,
-  tap_3,
+/// Enum for resources sounds
+enum SoundResources {
+  cleaning,
+  food,
+  starcollect,
+  toys,
 }
 
 /// Enum for review sounds
-enum ReviewSound {
+enum SoundReview {
   happy,
   sad,
 }
 
-/// Enum for messages sounds
-enum MessagesSound {
-  message,
+/// Enum for send sounds
+enum SoundSend {
+  inviteToChatRoom1full,
 }
 
-/// Enum for clip sounds
-enum ClipSound {
-  containerdrop,
+/// Enum for success sounds
+enum SoundSuccess {
+  bonuswin,
+  celebration,
+  completed,
+  fanfare,
+  gameSuccessWin,
+  gameWin,
+  happyWinGame,
+  okButton,
+  positiveGameWin,
+  positiveWin,
+  successJoy,
+  winning,
+  winGame,
 }
 
-/// Enum for deny sounds
-enum DenySound {
-  delete,
+/// Enum for tap sounds
+enum SoundTAP {
+  tap,
 }
 
-/// Enum for pickup sounds
-enum PickupSound {
-  plop,
+/// Enum for tetris sounds
+enum SoundTetris {
+  allfound,
+  fall,
+  hit,
+  right,
+  select,
+  unselect,
+  wrong,
+}
+
+/// Enum for transitions sounds
+enum SoundTransitions {
+  expand,
+  opener,
+  shrink,
+}
+
+/// Enum for whoosh sounds
+enum SoundWhoosh {
+  abstractPositiveGameWin1,
+  airyWhoosh,
+  bladeWhoosh,
+  cartoonwhooshBw3973,
+  cartoonDeployWhooshfull,
+  heavySwordWhoosh,
+  heavyWhoosh,
+  longwhoosh,
+  mountainAudioDeepWhoosh,
+  ninjaPunchWhoosh,
+  sharpSwordWhoosh,
+  sharpWhoosh,
+  swordWhoosh3,
+  swordWhoosh5,
+  turn,
+  whooshmove,
+  whoosh2,
+  whooshAccelerate,
+  whooshSingle,
 }
 
 /// Sound category selector
@@ -175,16 +289,24 @@ enum SoundCategory {
   background,
   balance,
   bubble,
+  cheering,
+  click,
   clip,
   coins,
   deny,
+  fail,
+  levelup,
+  login,
   messages,
   petsCleaning,
   petsEat,
   petsPlay,
+  petsShortReactions,
   pickup,
+  reminders,
   resources,
   review,
+  send,
   success,
   tap,
   tetris,

@@ -17,16 +17,24 @@ enum SoundType {
   background,
   balance,
   bubble,
+  cheering,
+  click,
   clip,
   coins,
   deny,
+  fail,
+  levelup,
+  login,
   messages,
   petsCleaning,
   petsEat,
   petsPlay,
+  petsShortReactions,
   pickup,
+  reminders,
   resources,
   review,
+  send,
   success,
   tap,
   tetris,
@@ -234,67 +242,101 @@ extension SoundExtension on Widget {
     double volume = 1.0,
     bool isDragWidget = false,
   }) {
-    // Ambil path sesuai tipe
-    String path;
+    late final String path;
     switch (type) {
       case SoundType.background:
         path =
-            SoundPaths.instance.backgroundSoundPaths[sound as BackgroundSound]!;
+            SoundPaths.instance.SoundBackgroundPaths[sound as SoundBackground]!;
         break;
       case SoundType.balance:
-        path = SoundPaths.instance.balanceSoundPaths[sound as BalanceSound]!;
+        path = SoundPaths.instance.balanceSoundPaths[sound as SoundBalance]!;
         break;
       case SoundType.bubble:
-        path = SoundPaths.instance.bubbleSoundPaths[sound as BubbleSound]!;
+        path = SoundPaths.instance.bubbleSoundPaths[sound as SoundBubble]!;
+        break;
+      case SoundType.cheering:
+        path = SoundPaths.instance.cheeringSoundPaths[sound as SoundCheering]!;
+        break;
+      case SoundType.click:
+        path = SoundPaths.instance.clickSoundPaths[sound as SoundClick]!;
         break;
       case SoundType.clip:
-        path = SoundPaths.instance.clipSoundPaths[sound as ClipSound]!;
+        path = SoundPaths.instance.clipSoundPaths[sound as SoundClip]!;
         break;
       case SoundType.coins:
-        path = SoundPaths.instance.coinsSoundPaths[sound as CoinsSound]!;
+        path = SoundPaths.instance.coinsSoundPaths[sound as SoundCoins]!;
         break;
       case SoundType.deny:
-        path = SoundPaths.instance.denySoundPaths[sound as DenySound]!;
+        path = SoundPaths.instance.denySoundPaths[sound as SoundDeny]!;
+        break;
+      case SoundType.fail:
+        path = SoundPaths.instance.failSoundPaths[sound as SoundFail]!;
+        break;
+      case SoundType.levelup:
+        path = SoundPaths.instance.levelupSoundPaths[sound as SoundLevelup]!;
+        break;
+      case SoundType.login:
+        path = SoundPaths.instance.loginSoundPaths[sound as SoundLogin]!;
         break;
       case SoundType.messages:
-        path = SoundPaths.instance.messagesSoundPaths[sound as MessagesSound]!;
+        path = SoundPaths.instance.messagesSoundPaths[sound as SoundMessages]!;
         break;
       case SoundType.petsCleaning:
         path = SoundPaths
-            .instance.pets_cleaningSoundPaths[sound as PetsCleaningSound]!;
+            .instance.pets_cleaningSoundPaths[sound as SoundPetsCleaning]!;
         break;
       case SoundType.petsEat:
-        path = SoundPaths.instance.pets_eatSoundPaths[sound as PetsEatSound]!;
+        path = SoundPaths.instance.pets_eatSoundPaths[sound as SoundPetsEat]!;
         break;
       case SoundType.petsPlay:
-        path = SoundPaths.instance.pets_playSoundPaths[sound as PetsPlaySound]!;
+        path = SoundPaths.instance.pets_playSoundPaths[sound as SoundPetsPlay]!;
+        break;
+      case SoundType.petsShortReactions:
+        path = SoundPaths.instance
+            .pets_short_reactionsSoundPaths[sound as SoundPetsShortReactions]!;
         break;
       case SoundType.pickup:
-        path = SoundPaths.instance.pickupSoundPaths[sound as PickupSound]!;
+        path = SoundPaths.instance.pickupSoundPaths[sound as SoundPickup]!;
+        break;
+      case SoundType.reminders:
+        path =
+            SoundPaths.instance.remindersSoundPaths[sound as SoundReminders]!;
         break;
       case SoundType.resources:
         path =
-            SoundPaths.instance.resourcesSoundPaths[sound as ResourcesSound]!;
+            SoundPaths.instance.resourcesSoundPaths[sound as SoundResources]!;
         break;
       case SoundType.review:
-        path = SoundPaths.instance.reviewSoundPaths[sound as ReviewSound]!;
+        path = SoundPaths.instance.reviewSoundPaths[sound as SoundReview]!;
+        break;
+      case SoundType.send:
+        path = SoundPaths.instance.sendSoundPaths[sound as SoundSend]!;
         break;
       case SoundType.success:
-        path = SoundPaths.instance.successSoundPaths[sound as SuccessSound]!;
+        path = SoundPaths.instance.successSoundPaths[sound as SoundSuccess]!;
         break;
       case SoundType.tap:
-        path = SoundPaths.instance.tapSoundPaths[sound as TAPSound]!;
+        path = SoundPaths.instance.tapSoundPaths[sound as SoundTAP]!;
         break;
       case SoundType.tetris:
-        path = SoundPaths.instance.tetrisSoundPaths[sound as TetrisSound]!;
+        path = SoundPaths.instance.tetrisSoundPaths[sound as SoundTetris]!;
         break;
       case SoundType.transitions:
         path = SoundPaths
-            .instance.transitionsSoundPaths[sound as TransitionsSound]!;
+            .instance.transitionsSoundPaths[sound as SoundTransitions]!;
         break;
       case SoundType.whoosh:
-        path = SoundPaths.instance.whooshSoundPaths[sound as WhooshSound]!;
+        path = SoundPaths.instance.whooshSoundPaths[sound as SoundWhoosh]!;
         break;
+    }
+
+    if (isDragWidget) {
+      return _DragSoundWrapper(
+        path: path,
+        volume: volume,
+        type: type,
+        child: this,
+      );
     }
 
     // Draggable → Listener (tidak mengganggu gesture internal)
@@ -347,6 +389,8 @@ class _DragSoundWrapperState extends State<_DragSoundWrapper> {
   static const _whooshCooldown =
       Duration(milliseconds: 150); // Cooldown antara whoosh sounds
   DateTime? _lastWhooshTime;
+  bool _hasPlayedWhooshInCurrentDrag =
+      false; // Flag untuk memastikan whoosh hanya dimainkan sekali per drag
 
   void _onPointerDown(PointerDownEvent event) {
     final now = DateTime.now();
@@ -374,28 +418,27 @@ class _DragSoundWrapperState extends State<_DragSoundWrapper> {
         final velocity = deltaPosition.distance / deltaTime;
         _lastVelocity = velocity;
 
-        // Cek apakah sudah waktunya memainkan whoosh sound
-        if (_lastWhooshTime == null ||
-            now.difference(_lastWhooshTime!) > _whooshCooldown) {
-          // Hanya mainkan whoosh jika kecepatan cukup tinggi
-          if (velocity > _minVelocityThreshold) {
-            // Scale volume berdasarkan kecepatan
-            final volumeScale = math.min(
-                (velocity - _minVelocityThreshold) /
-                    (_maxVelocityThreshold - _minVelocityThreshold),
-                1.0);
+        // Hanya mainkan whoosh sekali per sesi drag dan jika kecepatan cukup tinggi
+        if (!_hasPlayedWhooshInCurrentDrag &&
+            velocity > _minVelocityThreshold) {
+          // Scale volume berdasarkan kecepatan
+          final volumeScale = math.min(
+              (velocity - _minVelocityThreshold) /
+                  (_maxVelocityThreshold - _minVelocityThreshold),
+              1.0);
 
-            // Volume minimum 0.3, maximum 0.7
-            final whooshVolume = 0.3 + (volumeScale * 0.4);
+          // Volume minimum 0.3, maximum 0.7
+          final whooshVolume = 0.3 + (volumeScale * 0.4);
 
-            SoundQueue.instance.play(
-              SoundPaths.instance.whooshSoundPaths[WhooshSound.longwhoosh]!,
-              volume: widget.volume * whooshVolume,
-              type: SoundType.whoosh,
-            );
+          SoundQueue.instance.play(
+            SoundPaths.instance.whooshSoundPaths[SoundWhoosh.longwhoosh]!,
+            volume: widget.volume * whooshVolume,
+            type: SoundType.whoosh,
+          );
 
-            _lastWhooshTime = now;
-          }
+          _hasPlayedWhooshInCurrentDrag =
+              true; // Set flag agar tidak dimainkan lagi dalam drag ini
+          _lastWhooshTime = now;
         }
       }
       _lastPosition = event.position;
@@ -410,7 +453,7 @@ class _DragSoundWrapperState extends State<_DragSoundWrapper> {
       final clickVolume = 0.4 + (dropVolume * 0.3); // Volume antara 0.4 - 0.7
 
       SoundQueue.instance.play(
-        SoundPaths.instance.clipSoundPaths[ClipSound.containerdrop]!,
+        SoundPaths.instance.clipSoundPaths[SoundClip.containerdrop]!,
         volume: widget.volume * clickVolume,
         type: SoundType.clip,
       );
@@ -419,6 +462,7 @@ class _DragSoundWrapperState extends State<_DragSoundWrapper> {
     _isDragging = false;
     _lastPosition = null;
     _lastVelocity = 0;
+    _hasPlayedWhooshInCurrentDrag = false; // Reset flag untuk drag berikutnya
   }
 
   @override
@@ -436,13 +480,13 @@ class _DragSoundWrapperState extends State<_DragSoundWrapper> {
 /// ─────────────────────────────────────────────────────────────────────────────
 ///  BGM EXTENSION
 extension BgmExtension on Widget {
-  Widget addBGM(BackgroundSound bgm) => _BgmWrapper(child: this, bgm: bgm);
+  Widget addBGM(SoundBackground bgm) => _BgmWrapper(child: this, bgm: bgm);
 }
 
 /// ─────────────────────────────────────────────────────────────────────────────
 ///  BGM GLOBAL EXTENSION
 extension BgmGlobalExtension on Widget {
-  Widget addBGMGlobal(List<BackgroundSound> listSound) => _BgmGlobalWrapper(
+  Widget addBGMGlobal(List<SoundBackground> listSound) => _BgmGlobalWrapper(
         child: this,
         listSound: listSound,
       );
@@ -451,7 +495,7 @@ extension BgmGlobalExtension on Widget {
 class _BgmWrapper extends StatefulWidget {
   const _BgmWrapper({required this.child, required this.bgm});
   final Widget child;
-  final BackgroundSound bgm;
+  final SoundBackground bgm;
   @override
   State<_BgmWrapper> createState() => _BgmWrapperState();
 }
@@ -501,7 +545,7 @@ class _BgmGlobalWrapper extends StatefulWidget {
     required this.listSound,
   });
   final Widget child;
-  final List<BackgroundSound> listSound;
+  final List<SoundBackground> listSound;
   @override
   State<_BgmGlobalWrapper> createState() => _BgmGlobalWrapperState();
 }
@@ -551,17 +595,17 @@ class BgmManager {
   BgmManager._();
   static final BgmManager instance = BgmManager._();
 
-  final _stack = <BackgroundSound>[];
+  final _stack = <SoundBackground>[];
   AudioPlayer? _current;
-  BackgroundSound? _currentSound;
+  SoundBackground? _currentSound;
 
   // Global BGM state
-  List<BackgroundSound> _globalBGMList = [];
+  List<SoundBackground> _globalBGMList = [];
   int _globalCounterSound = 0;
   int _currentTrackIndex = 0;
   bool _isGlobalBGMActive = false;
   AudioPlayer? _globalPlayer;
-  BackgroundSound? _globalCurrentSound;
+  SoundBackground? _globalCurrentSound;
 
   /* cross-fade antar-halaman */
   final _xFade = const Duration(milliseconds: 600);
@@ -584,7 +628,7 @@ class BgmManager {
   static const String _counterSoundKey = 'bgm_counter_sound';
 
   /* ── GLOBAL BGM API ── */
-  Future<void> setGlobalBGM(List<BackgroundSound> listSound) async {
+  Future<void> setGlobalBGM(List<SoundBackground> listSound) async {
     debugPrint('[BGM] 🌍 Setting global BGM with ${listSound.length} tracks');
     _globalBGMList = listSound;
 
@@ -675,7 +719,7 @@ class BgmManager {
     }
   }
 
-  Future<void> _switchToGlobalBgm(BackgroundSound newBgm) async {
+  Future<void> _switchToGlobalBgm(SoundBackground newBgm) async {
     try {
       debugPrint('[BGM] 🌍 Switching to global BGM: $newBgm');
       await _stopGlobalBGM();
@@ -706,7 +750,7 @@ class BgmManager {
       // Hapus ReleaseMode.loop agar tidak loop
       await newPlayer.setReleaseMode(ReleaseMode.stop);
 
-      final absPath = SoundPaths.instance.backgroundSoundPaths[newBgm];
+      final absPath = SoundPaths.instance.SoundBackgroundPaths[newBgm];
       if (absPath == null) {
         debugPrint('[BGM] 🌍 ❌ Error: BGM path not found for $newBgm');
         return;
@@ -750,7 +794,7 @@ class BgmManager {
   }
 
   /* ── PUBLIC API untuk wrapper ── */
-  void push(BackgroundSound s) {
+  void push(SoundBackground s) {
     debugPrint('[BGM] Push: $s');
     _stack.add(s);
 
@@ -762,7 +806,7 @@ class BgmManager {
     _queueRefresh();
   }
 
-  void pop(BackgroundSound s) {
+  void pop(SoundBackground s) {
     debugPrint('[BGM] Pop: $s');
     _stack.remove(s);
     _queueRefresh();
@@ -1003,7 +1047,7 @@ class BgmManager {
     }
   }
 
-  Future<void> _switchToBgm(BackgroundSound newBgm) async {
+  Future<void> _switchToBgm(SoundBackground newBgm) async {
     try {
       final newPlayer = AudioPlayer();
 
@@ -1031,7 +1075,7 @@ class BgmManager {
 
       await newPlayer.setReleaseMode(ReleaseMode.loop);
 
-      final absPath = SoundPaths.instance.backgroundSoundPaths[newBgm]!;
+      final absPath = SoundPaths.instance.SoundBackgroundPaths[newBgm]!;
       final relPath = _relative(absPath);
 
       await newPlayer.setSource(AssetSource(relPath));
@@ -1288,7 +1332,7 @@ class SoundController {
   ///
   /// // Play BGM
   /// await SoundController.instance.playSound(
-  ///   BackgroundSound.yourBGM,
+  ///   SoundBackground.yourBGM,
   ///   SoundType.background,
   ///   volume: 1.0
   /// );
@@ -1302,61 +1346,87 @@ class SoundController {
     switch (type) {
       case SoundType.background:
         path =
-            SoundPaths.instance.backgroundSoundPaths[sound as BackgroundSound]!;
+            SoundPaths.instance.SoundBackgroundPaths[sound as SoundBackground]!;
         break;
       case SoundType.balance:
-        path = SoundPaths.instance.balanceSoundPaths[sound as BalanceSound]!;
+        path = SoundPaths.instance.balanceSoundPaths[sound as SoundBalance]!;
         break;
       case SoundType.bubble:
-        path = SoundPaths.instance.bubbleSoundPaths[sound as BubbleSound]!;
+        path = SoundPaths.instance.bubbleSoundPaths[sound as SoundBubble]!;
+        break;
+      case SoundType.cheering:
+        path = SoundPaths.instance.cheeringSoundPaths[sound as SoundCheering]!;
+        break;
+      case SoundType.click:
+        path = SoundPaths.instance.clickSoundPaths[sound as SoundClick]!;
         break;
       case SoundType.clip:
-        path = SoundPaths.instance.clipSoundPaths[sound as ClipSound]!;
+        path = SoundPaths.instance.clipSoundPaths[sound as SoundClip]!;
         break;
       case SoundType.coins:
-        path = SoundPaths.instance.coinsSoundPaths[sound as CoinsSound]!;
+        path = SoundPaths.instance.coinsSoundPaths[sound as SoundCoins]!;
         break;
       case SoundType.deny:
-        path = SoundPaths.instance.denySoundPaths[sound as DenySound]!;
+        path = SoundPaths.instance.denySoundPaths[sound as SoundDeny]!;
+        break;
+      case SoundType.fail:
+        path = SoundPaths.instance.failSoundPaths[sound as SoundFail]!;
+        break;
+      case SoundType.levelup:
+        path = SoundPaths.instance.levelupSoundPaths[sound as SoundLevelup]!;
+        break;
+      case SoundType.login:
+        path = SoundPaths.instance.loginSoundPaths[sound as SoundLogin]!;
         break;
       case SoundType.messages:
-        path = SoundPaths.instance.messagesSoundPaths[sound as MessagesSound]!;
+        path = SoundPaths.instance.messagesSoundPaths[sound as SoundMessages]!;
         break;
       case SoundType.petsCleaning:
         path = SoundPaths
-            .instance.pets_cleaningSoundPaths[sound as PetsCleaningSound]!;
+            .instance.pets_cleaningSoundPaths[sound as SoundPetsCleaning]!;
         break;
       case SoundType.petsEat:
-        path = SoundPaths.instance.pets_eatSoundPaths[sound as PetsEatSound]!;
+        path = SoundPaths.instance.pets_eatSoundPaths[sound as SoundPetsEat]!;
         break;
       case SoundType.petsPlay:
-        path = SoundPaths.instance.pets_playSoundPaths[sound as PetsPlaySound]!;
+        path = SoundPaths.instance.pets_playSoundPaths[sound as SoundPetsPlay]!;
+        break;
+      case SoundType.petsShortReactions:
+        path = SoundPaths.instance
+            .pets_short_reactionsSoundPaths[sound as SoundPetsShortReactions]!;
         break;
       case SoundType.pickup:
-        path = SoundPaths.instance.pickupSoundPaths[sound as PickupSound]!;
+        path = SoundPaths.instance.pickupSoundPaths[sound as SoundPickup]!;
+        break;
+      case SoundType.reminders:
+        path =
+            SoundPaths.instance.remindersSoundPaths[sound as SoundReminders]!;
         break;
       case SoundType.resources:
         path =
-            SoundPaths.instance.resourcesSoundPaths[sound as ResourcesSound]!;
+            SoundPaths.instance.resourcesSoundPaths[sound as SoundResources]!;
         break;
       case SoundType.review:
-        path = SoundPaths.instance.reviewSoundPaths[sound as ReviewSound]!;
+        path = SoundPaths.instance.reviewSoundPaths[sound as SoundReview]!;
+        break;
+      case SoundType.send:
+        path = SoundPaths.instance.sendSoundPaths[sound as SoundSend]!;
         break;
       case SoundType.success:
-        path = SoundPaths.instance.successSoundPaths[sound as SuccessSound]!;
+        path = SoundPaths.instance.successSoundPaths[sound as SoundSuccess]!;
         break;
       case SoundType.tap:
-        path = SoundPaths.instance.tapSoundPaths[sound as TAPSound]!;
+        path = SoundPaths.instance.tapSoundPaths[sound as SoundTAP]!;
         break;
       case SoundType.tetris:
-        path = SoundPaths.instance.tetrisSoundPaths[sound as TetrisSound]!;
+        path = SoundPaths.instance.tetrisSoundPaths[sound as SoundTetris]!;
         break;
       case SoundType.transitions:
         path = SoundPaths
-            .instance.transitionsSoundPaths[sound as TransitionsSound]!;
+            .instance.transitionsSoundPaths[sound as SoundTransitions]!;
         break;
       case SoundType.whoosh:
-        path = SoundPaths.instance.whooshSoundPaths[sound as WhooshSound]!;
+        path = SoundPaths.instance.whooshSoundPaths[sound as SoundWhoosh]!;
         break;
     }
 
@@ -1364,7 +1434,7 @@ class SoundController {
   }
 
   /// Set global BGM list
-  Future<void> setGlobalBGM(List<BackgroundSound> listSound) async {
+  Future<void> setGlobalBGM(List<SoundBackground> listSound) async {
     BgmManager.instance.setGlobalBGM(listSound);
   }
 

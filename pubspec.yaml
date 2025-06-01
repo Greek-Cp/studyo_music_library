@@ -28,16 +28,24 @@ flutter:
     - assets/sounds/background/
     - assets/sounds/balance/
     - assets/sounds/bubble/
+    - assets/sounds/cheering/
+    - assets/sounds/click/
     - assets/sounds/clip/
     - assets/sounds/coins/
     - assets/sounds/deny/
+    - assets/sounds/fail/
+    - assets/sounds/levelup/
+    - assets/sounds/login/
     - assets/sounds/messages/
     - assets/sounds/pets_cleaning/
     - assets/sounds/pets_eat/
     - assets/sounds/pets_play/
+    - assets/sounds/pets_short_reactions/
     - assets/sounds/pickup/
+    - assets/sounds/reminders/
     - assets/sounds/resources/
     - assets/sounds/review/
+    - assets/sounds/send/
     - assets/sounds/success/
     - assets/sounds/tap/
     - assets/sounds/tetris/

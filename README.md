@@ -89,27 +89,27 @@ Draggable(
 // For a single page
 Scaffold(
   body: YourPageContent(),
-).addBGM(BackgroundSound.journal)
+).addBGM(SoundBackground.journal)
 
 // For global BGM across multiple pages
 Scaffold(
   body: YourPageContent(),
 ).addBGMGlobal([
-  BackgroundSound.balance,
-  BackgroundSound.bonus,
-  BackgroundSound.journal,
+  SoundBackground.balance,
+  SoundBackground.bonus,
+  SoundBackground.journal,
 ])
 ```
 
 ## Available Sound Types
 
 ### Background Sounds
-- `BackgroundSound.journal`
-- `BackgroundSound.bonus`
-- `BackgroundSound.balance`
-- `BackgroundSound.teamup`
-- `BackgroundSound.bubbles`
-- `BackgroundSound.tetris`
+- `SoundBackground.journal`
+- `SoundBackground.bonus`
+- `SoundBackground.balance`
+- `SoundBackground.teamup`
+- `SoundBackground.bubbles`
+- `SoundBackground.tetris`
 - And more...
 
 ### Sound Effects
@@ -126,10 +126,10 @@ Scaffold(
 
 ```dart
 // Play specific BGM
-BgmManager.instance.push(BackgroundSound.journal);
+BgmManager.instance.push(SoundBackground.journal);
 
 // Stop current BGM
-BgmManager.instance.pop(BackgroundSound.journal);
+BgmManager.instance.pop(SoundBackground.journal);
 
 // Set volume
 BgmManager.instance.setBaseVolume(0.8);
