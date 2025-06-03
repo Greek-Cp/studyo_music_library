@@ -45,8 +45,8 @@ import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'sound_enums.dart';
-import 'sound_paths.dart';
+import '../core/sound_enums.dart';
+import '../core/sound_paths.dart';
 
 final RouteObserver<PageRoute<dynamic>> routeObserver =
     RouteObserver<PageRoute<dynamic>>();

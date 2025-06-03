@@ -1,9 +1,9 @@
 // Widget wrapper untuk sound effect pada drag/tap
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-import 'sound_enums.dart';
-import 'sound_paths.dart';
-import 'bgm_manager.dart';
+import '../core/sound_enums.dart';
+import '../core/sound_paths.dart';
+import '../manager/bgm_manager.dart';
 
 class DragSoundWrapper extends StatefulWidget {
   final Widget child;

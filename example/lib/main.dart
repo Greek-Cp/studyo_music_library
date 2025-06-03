@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:flame_audio/flame_audio.dart';
 import 'package:collection/collection.dart';
+import 'package:studyo_music_library/core/sound_manager/core/sound_controller.dart';
 import 'package:studyo_music_library/studyo_music_library.dart';
 
 // Route Observer for tracking navigation
@@ -153,7 +153,7 @@ class SoundTestPage extends StatelessWidget {
                 color: Colors.green,
                 child: const Center(child: Text('Drag Me')),
               ),
-            ).addSound(SoundTAP.tap, SoundType.tap, isDragWidget: true),
+            ).addSound(SoundPickup.plop, SoundType.pickup, isDragWidget: true),
 
             const SizedBox(height: 16),
 
@@ -374,7 +374,8 @@ class _PageAState extends State<PageA> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Drag & Drop Game'),
+        title: const Text('Drag & Drop Game')
+            .addSound(SoundClick.interfaceClick, SoundType.click),
         actions: [
           // BGM Volume Control
           Padding(
@@ -418,7 +419,8 @@ class _PageAState extends State<PageA> {
                             fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center,
-                        ),
+                        ).addSound(
+                            SoundResources.starcollect, SoundType.resources),
                         const SizedBox(height: 16),
                         Expanded(
                           child: GridView.builder(
@@ -577,16 +579,16 @@ class _PageAState extends State<PageA> {
           ),
         );
       },
-      onWillAccept: (itemId) {
+      onWillAcceptWithDetails: (details) {
+        final itemId = details.data;
         if (itemId == null) return false;
         final item = items.firstWhere((item) => item.id == itemId);
         return !droppedItems.containsKey(itemId) && item.target == targetId;
       },
-      onAccept: (itemId) => _onDragEnd(itemId, targetId),
+      onAcceptWithDetails: (details) => _onDragEnd(details.data, targetId),
     );
   }
 }
-
 class DragItem {
   final String id;
   final String label;

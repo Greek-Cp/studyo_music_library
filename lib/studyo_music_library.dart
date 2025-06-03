@@ -1,13 +1,13 @@
 library studyo_music_library;
 
 // Core BGM Manager
-export 'core/sound_manager/bgm_manager.dart';
+export 'core/sound_manager/manager/bgm_manager.dart';
 
 // Sound Enums
-export 'core/sound_manager/sound_enums.dart';
+export 'core/sound_manager/core/sound_enums.dart';
 
 // Sound Paths
-export 'core/sound_manager/sound_paths.dart';
+export 'core/sound_manager/core/sound_paths.dart';
 export 'package:flame_audio/flame_audio.dart';
 // Extensions
 export 'core/sound_manager/extensions/sound_extensions.dart';
@@ -19,4 +19,4 @@ export 'core/sound_manager/widgets/tap_sound_wrapper.dart';
 // Utils
 
 // Route Observer
-export 'core/sound_manager/sound_route_observer.dart';
+export 'core/sound_manager/core/sound_route_observer.dart';

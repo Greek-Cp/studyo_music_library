@@ -1,6 +1,6 @@
 // Widget wrapper untuk BGM per halaman
 import 'package:flutter/material.dart';
-import 'sound_enums.dart';
+import '../core/sound_enums.dart';
 import 'bgm_manager.dart';
 
 class BgmWrapper extends StatefulWidget {

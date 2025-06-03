@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
-import '../bgm_manager.dart';
+import '../manager/bgm_manager.dart';
 
 String relative(String full) =>
     full.replaceFirst('packages/studyo_musi\c_library/assets/', '');

@@ -1,6 +1,6 @@
-import 'package:studyo_music_library/core/sound_manager/bgm_manager.dart';
-import 'package:studyo_music_library/core/sound_manager/sound_enums.dart';
-import 'package:studyo_music_library/core/sound_manager/sound_paths.dart';
+import 'package:studyo_music_library/core/sound_manager/manager/bgm_manager.dart';
+import 'package:studyo_music_library/core/sound_manager/core/sound_enums.dart';
+import 'package:studyo_music_library/core/sound_manager/core/sound_paths.dart';
 
 /// ─────────────────────────────────────────────────────────────────────────────
 ///  SOUND CONTROLLER
