@@ -32,19 +32,27 @@ class BGMController extends GetxController {
   }
 }
 
-Future<void> initSoundSystem() async {
-  // Initialize the sound system for library usage
-  FlameAudio.audioCache.prefix = 'packages/studyo_music_library/assets/';
-
-  // Preload all sounds
-  await BgmManager.instance.preloadAll();
-}
+// Auto-initialization example - no manual setup needed!
+// The library automatically initializes when imported
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initSoundSystem();
+
+  // No need to call initSoundSystem() anymore!
+  // The library handles initialization automatically
+
   runApp(const MainApp());
 }
+
+// Optional: If you want to ensure initialization is complete before starting
+// void main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//
+//   // Wait for auto-initialization to complete (optional)
+//   await StudyoMusicLibraryAutoInit.initialize();
+//
+//   runApp(const MainApp());
+// }
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
@@ -589,6 +597,7 @@ class _PageAState extends State<PageA> {
     );
   }
 }
+
 class DragItem {
   final String id;
   final String label;

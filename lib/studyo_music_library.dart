@@ -1,5 +1,8 @@
 library studyo_music_library;
 
+// Auto-initialization - MUST be imported first
+export 'core/sound_manager/core/auto_init.dart';
+
 // Core BGM Manager
 export 'core/sound_manager/manager/bgm_manager.dart';
 
