@@ -62,7 +62,7 @@ enum SoundClip {
   cartoonRoughPlop,
   connectGamePlop,
   containerdrop,
-  elasticsnapstretchlowendwhompsmackcordO1ewa01,
+  elasticsnapstretch,
   fastArpPlucksDown,
   itemGetsDropped,
   machantqElectronicAddingMachinePressSingleGenhd100038,
@@ -97,8 +97,8 @@ enum SoundDeny {
   cartoonThinJumpPlop,
   confirmDenied,
   delete,
+  denyding,
   denyFatLow,
-  gentleOkPluckDing,
   interfaceSciFiDenyStabHard,
   woodDiscreteNotifyAccessDeniedfull,
 }
@@ -133,6 +133,29 @@ enum SoundLogin {
 /// Enum for messages sounds
 enum SoundMessages {
   message,
+}
+
+/// Enum for other sounds
+enum SoundOther {
+  blockdrop1,
+  blockdrop2,
+  cartoonadd,
+  cartoonbubblelaunch,
+  cartoonbubblesdrain,
+  cartoondisappears,
+  cartoonhit,
+  expandelement,
+  fastscroll,
+  fastscroll2,
+  hit,
+  scroll,
+  spring1,
+  spring2,
+  spring3,
+  suction,
+  tick,
+  tick2,
+  waterbubbles,
 }
 
 /// Enum for pets_cleaning sounds
@@ -230,6 +253,8 @@ enum SoundSuccess {
   gameSuccessWin,
   gameWin,
   happyWinGame,
+  lightok,
+  okding,
   okButton,
   positiveGameWin,
   positiveWin,
@@ -240,7 +265,10 @@ enum SoundSuccess {
 
 /// Enum for tap sounds
 enum SoundTAP {
+  bubble,
+  deepbutton,
   tap,
+  water,
 }
 
 /// Enum for tetris sounds
@@ -266,8 +294,8 @@ enum SoundWhoosh {
   abstractPositiveGameWin1,
   airyWhoosh,
   bladeWhoosh,
+  cartoonwhoosh,
   cartoonwhooshBw3973,
-  cartoonDeployWhooshfull,
   heavySwordWhoosh,
   heavyWhoosh,
   longwhoosh,
@@ -298,6 +326,7 @@ enum SoundCategory {
   levelup,
   login,
   messages,
+  other,
   petsCleaning,
   petsEat,
   petsPlay,

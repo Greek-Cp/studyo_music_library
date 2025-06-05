@@ -32,10 +32,11 @@ class SoundController {
     double volume = 1.0,
   }) async {
     String path;
+
     switch (type) {
       case SoundType.background:
         path =
-            SoundPaths.instance.SoundBackgroundPaths[sound as SoundBackground]!;
+            SoundPaths.instance.backgroundSoundPaths[sound as SoundBackground]!;
         break;
       case SoundType.balance:
         path = SoundPaths.instance.balanceSoundPaths[sound as SoundBalance]!;
@@ -69,6 +70,9 @@ class SoundController {
         break;
       case SoundType.messages:
         path = SoundPaths.instance.messagesSoundPaths[sound as SoundMessages]!;
+        break;
+      case SoundType.other:
+        path = SoundPaths.instance.otherSoundPaths[sound as SoundOther]!;
         break;
       case SoundType.petsCleaning:
         path = SoundPaths
@@ -118,7 +122,6 @@ class SoundController {
         path = SoundPaths.instance.whooshSoundPaths[sound as SoundWhoosh]!;
         break;
     }
-
     await playOneShot(path, volume: volume);
   }
 

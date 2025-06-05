@@ -18,7 +18,7 @@ extension SoundExtension on Widget {
     switch (type) {
       case SoundType.background:
         path =
-            SoundPaths.instance.SoundBackgroundPaths[sound as SoundBackground]!;
+            SoundPaths.instance.backgroundSoundPaths[sound as SoundBackground]!;
         break;
       case SoundType.balance:
         path = SoundPaths.instance.balanceSoundPaths[sound as SoundBalance]!;
@@ -52,6 +52,9 @@ extension SoundExtension on Widget {
         break;
       case SoundType.messages:
         path = SoundPaths.instance.messagesSoundPaths[sound as SoundMessages]!;
+        break;
+      case SoundType.other:
+        path = SoundPaths.instance.otherSoundPaths[sound as SoundOther]!;
         break;
       case SoundType.petsCleaning:
         path = SoundPaths
@@ -101,6 +104,7 @@ extension SoundExtension on Widget {
         path = SoundPaths.instance.whooshSoundPaths[sound as SoundWhoosh]!;
         break;
     }
+
     if (isDragWidget) {
       return DragSoundWrapper(
         path: path,

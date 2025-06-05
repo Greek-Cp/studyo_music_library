@@ -52,6 +52,8 @@ final RouteObserver<PageRoute<dynamic>> routeObserver =
     RouteObserver<PageRoute<dynamic>>();
 
 /// Type of sound to be played
+/// Type of sound to be played
+/// Type of sound to be played
 enum SoundType {
   background,
   balance,
@@ -65,6 +67,7 @@ enum SoundType {
   levelup,
   login,
   messages,
+  other,
   petsCleaning,
   petsEat,
   petsPlay,
@@ -186,7 +189,7 @@ class BgmManager {
   double _baseVolume = 1.0; // Volume dasar BGM
   double _currentVol = 1.0; // Volume aktual saat ini
   double _duckVolume =
-      0.1; // Volume saat di-duck (60% - lebih tinggi dari sebelumnya)
+      0.6; // Volume saat di-duck (60% - lebih tinggi dari sebelumnya)
 
   /* navigation state */
   bool _isPausedForNavigation = false;
@@ -321,7 +324,7 @@ class BgmManager {
       // Hapus ReleaseMode.loop agar tidak loop
       await newPlayer.setReleaseMode(ReleaseMode.stop);
 
-      final absPath = SoundPaths.instance.SoundBackgroundPaths[newBgm];
+      final absPath = SoundPaths.instance.backgroundSoundPaths[newBgm];
       if (absPath == null) {
         debugPrint('[BGM] 🌍 ❌ Error: BGM path not found for $newBgm');
         return;
@@ -646,7 +649,7 @@ class BgmManager {
 
       await newPlayer.setReleaseMode(ReleaseMode.loop);
 
-      final absPath = SoundPaths.instance.SoundBackgroundPaths[newBgm]!;
+      final absPath = SoundPaths.instance.backgroundSoundPaths[newBgm]!;
       final relPath = _relative(absPath);
 
       await newPlayer.setSource(AssetSource(relPath));

@@ -9,7 +9,7 @@ class SoundPaths {
 
   static const _root = '${_assetPrefix}assets/sounds/';
 
-  final SoundBackgroundPaths = <SoundBackground, String>{
+  final backgroundSoundPaths = <SoundBackground, String>{
     SoundBackground.balance: '${_root}background/balance.m4a',
     SoundBackground.bonus: '${_root}background/bonus.m4a',
     SoundBackground.bubbles: '${_root}background/bubbles.m4a',
@@ -79,8 +79,7 @@ class SoundPaths {
     SoundClip.cartoonRoughPlop: '${_root}clip/cartoon_rough_plop.m4a',
     SoundClip.connectGamePlop: '${_root}clip/connect_game_plop.m4a',
     SoundClip.containerdrop: '${_root}clip/containerdrop.m4a',
-    SoundClip.elasticsnapstretchlowendwhompsmackcordO1ewa01:
-        '${_root}clip/elasticsnapstretchlowendwhompsmackcord_o1ewa_01.m4a',
+    SoundClip.elasticsnapstretch: '${_root}clip/elasticsnapstretch.m4a',
     SoundClip.fastArpPlucksDown: '${_root}clip/fast_arp_plucks_down.m4a',
     SoundClip.itemGetsDropped: '${_root}clip/item_gets_dropped.m4a',
     SoundClip.machantqElectronicAddingMachinePressSingleGenhd100038:
@@ -116,8 +115,8 @@ class SoundPaths {
     SoundDeny.cartoonThinJumpPlop: '${_root}deny/cartoon_thin_jump_plop.m4a',
     SoundDeny.confirmDenied: '${_root}deny/confirm_denied.m4a',
     SoundDeny.delete: '${_root}deny/delete.m4a',
+    SoundDeny.denyding: '${_root}deny/denyding.m4a',
     SoundDeny.denyFatLow: '${_root}deny/deny_fat_low.m4a',
-    SoundDeny.gentleOkPluckDing: '${_root}deny/gentle_ok_pluck_ding.m4a',
     SoundDeny.interfaceSciFiDenyStabHard:
         '${_root}deny/interface_sci_fi_deny_stab_hard.m4a',
     SoundDeny.woodDiscreteNotifyAccessDeniedfull:
@@ -151,6 +150,28 @@ class SoundPaths {
 
   final messagesSoundPaths = <SoundMessages, String>{
     SoundMessages.message: '${_root}messages/message.m4a',
+  };
+
+  final otherSoundPaths = <SoundOther, String>{
+    SoundOther.blockdrop1: '${_root}other/blockdrop1.m4a',
+    SoundOther.blockdrop2: '${_root}other/blockdrop2.m4a',
+    SoundOther.cartoonadd: '${_root}other/cartoonadd.m4a',
+    SoundOther.cartoonbubblelaunch: '${_root}other/cartoonbubblelaunch.m4a',
+    SoundOther.cartoonbubblesdrain: '${_root}other/cartoonbubblesdrain.m4a',
+    SoundOther.cartoondisappears: '${_root}other/cartoondisappears.m4a',
+    SoundOther.cartoonhit: '${_root}other/cartoonhit.m4a',
+    SoundOther.expandelement: '${_root}other/expandelement.m4a',
+    SoundOther.fastscroll: '${_root}other/fastscroll.m4a',
+    SoundOther.fastscroll2: '${_root}other/fastscroll2.m4a',
+    SoundOther.hit: '${_root}other/hit.m4a',
+    SoundOther.scroll: '${_root}other/scroll.m4a',
+    SoundOther.spring1: '${_root}other/spring1.m4a',
+    SoundOther.spring2: '${_root}other/spring2.m4a',
+    SoundOther.spring3: '${_root}other/spring3.m4a',
+    SoundOther.suction: '${_root}other/suction.m4a',
+    SoundOther.tick: '${_root}other/tick.m4a',
+    SoundOther.tick2: '${_root}other/tick2.m4a',
+    SoundOther.waterbubbles: '${_root}other/waterbubbles.m4a',
   };
 
   final pets_cleaningSoundPaths = <SoundPetsCleaning, String>{
@@ -253,6 +274,8 @@ class SoundPaths {
     SoundSuccess.gameSuccessWin: '${_root}success/game_success_win.m4a',
     SoundSuccess.gameWin: '${_root}success/game_win.m4a',
     SoundSuccess.happyWinGame: '${_root}success/happy_win_game.m4a',
+    SoundSuccess.lightok: '${_root}success/lightok.m4a',
+    SoundSuccess.okding: '${_root}success/okding.m4a',
     SoundSuccess.okButton: '${_root}success/ok_button.m4a',
     SoundSuccess.positiveGameWin: '${_root}success/positive_game_win.m4a',
     SoundSuccess.positiveWin: '${_root}success/positive_win.m4a',
@@ -262,7 +285,10 @@ class SoundPaths {
   };
 
   final tapSoundPaths = <SoundTAP, String>{
+    SoundTAP.bubble: '${_root}tap/bubble.m4a',
+    SoundTAP.deepbutton: '${_root}tap/deepbutton.m4a',
     SoundTAP.tap: '${_root}tap/tap.m4a',
+    SoundTAP.water: '${_root}tap/water.m4a',
   };
 
   final tetrisSoundPaths = <SoundTetris, String>{
@@ -286,9 +312,8 @@ class SoundPaths {
         '${_root}whoosh/abstract_positive_game_win_1.m4a',
     SoundWhoosh.airyWhoosh: '${_root}whoosh/airy_whoosh.m4a',
     SoundWhoosh.bladeWhoosh: '${_root}whoosh/blade_whoosh.m4a',
+    SoundWhoosh.cartoonwhoosh: '${_root}whoosh/cartoonwhoosh.m4a',
     SoundWhoosh.cartoonwhooshBw3973: '${_root}whoosh/cartoonwhoosh_bw3973.m4a',
-    SoundWhoosh.cartoonDeployWhooshfull:
-        '${_root}whoosh/cartoon_deploy_whooshfull.m4a',
     SoundWhoosh.heavySwordWhoosh: '${_root}whoosh/heavy_sword_whoosh.m4a',
     SoundWhoosh.heavyWhoosh: '${_root}whoosh/heavy_whoosh.m4a',
     SoundWhoosh.longwhoosh: '${_root}whoosh/longwhoosh.m4a',
@@ -309,7 +334,7 @@ class SoundPaths {
   String? getSoundPath(SoundCategory cat, dynamic sound) {
     switch (cat) {
       case SoundCategory.background:
-        return SoundBackgroundPaths[sound];
+        return backgroundSoundPaths[sound];
       case SoundCategory.balance:
         return balanceSoundPaths[sound];
       case SoundCategory.bubble:
@@ -332,6 +357,8 @@ class SoundPaths {
         return loginSoundPaths[sound];
       case SoundCategory.messages:
         return messagesSoundPaths[sound];
+      case SoundCategory.other:
+        return otherSoundPaths[sound];
       case SoundCategory.petsCleaning:
         return pets_cleaningSoundPaths[sound];
       case SoundCategory.petsEat:
@@ -365,7 +392,7 @@ class SoundPaths {
 
   /// semua path absolut (assets/…) — untuk preload
   List<String> getAllSoundPaths() => [
-        ...SoundBackgroundPaths.values,
+        ...backgroundSoundPaths.values,
         ...balanceSoundPaths.values,
         ...bubbleSoundPaths.values,
         ...cheeringSoundPaths.values,
@@ -377,6 +404,7 @@ class SoundPaths {
         ...levelupSoundPaths.values,
         ...loginSoundPaths.values,
         ...messagesSoundPaths.values,
+        ...otherSoundPaths.values,
         ...pets_cleaningSoundPaths.values,
         ...pets_eatSoundPaths.values,
         ...pets_playSoundPaths.values,

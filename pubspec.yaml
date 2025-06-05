@@ -37,6 +37,7 @@ flutter:
     - assets/sounds/levelup/
     - assets/sounds/login/
     - assets/sounds/messages/
+    - assets/sounds/other/
     - assets/sounds/pets_cleaning/
     - assets/sounds/pets_eat/
     - assets/sounds/pets_play/
@@ -51,6 +52,7 @@ flutter:
     - assets/sounds/tetris/
     - assets/sounds/transitions/
     - assets/sounds/whoosh/
+
 
 export:
   flame_audio: ^2.10.7
