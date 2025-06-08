@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:studyo_music_library/core/sound_manager/core/sound_enums.dart';
 import 'package:studyo_music_library/core/sound_manager/core/sound_paths.dart';
-  import 'package:studyo_music_library/core/sound_manager/core/sound_controller.dart';
+import 'package:studyo_music_library/core/sound_manager/core/sound_controller.dart';
 import 'package:studyo_music_library/core/sound_manager/manager/bgm_global_wrapper.dart';
 import 'package:studyo_music_library/core/sound_manager/manager/bgm_manager.dart';
 import 'package:studyo_music_library/core/sound_manager/manager/bgm_wrapper.dart';
@@ -10,12 +10,12 @@ import 'package:studyo_music_library/core/sound_manager/widgets/sound_widgets.da
 
 extension SoundExtension on Widget {
   /// Add sound to widget - supports both single sound and list of sounds
-  /// 
+  ///
   /// For single sound:
   /// ```dart
   /// widget.addSound(SoundTAP.tap, SoundType.tap)
   /// ```
-  /// 
+  ///
   /// For list of sounds with track management:
   /// ```dart
   /// widget.addSound([
@@ -36,18 +36,19 @@ extension SoundExtension on Widget {
       if (trackId == null) {
         throw ArgumentError('trackId is required when using list of sounds');
       }
-      
+
       // Set up the track
       SoundTrackController.instance.setSoundTrack(trackId, sound, type);
-      
+
       // Get current sound from track
-      final currentSound = SoundTrackController.instance.getCurrentSound(trackId);
+      final currentSound =
+          SoundTrackController.instance.getCurrentSound(trackId);
       if (currentSound == null) {
         return this; // Return widget without sound if no sound available
       }
-      
+
       final path = _getSoundPath(currentSound, type);
-      
+
       if (isDragWidget) {
         return DragSoundWrapper(
           path: path,
@@ -62,10 +63,10 @@ extension SoundExtension on Widget {
         child: this,
       );
     }
-    
+
     // Handle single sound (original behavior)
     final path = _getSoundPath(sound, type);
-    
+
     if (isDragWidget) {
       return DragSoundWrapper(
         path: path,
@@ -80,12 +81,13 @@ extension SoundExtension on Widget {
       child: this,
     );
   }
-  
+
   /// Helper method to get sound path based on type
   String _getSoundPath(dynamic sound, SoundType type) {
     switch (type) {
       case SoundType.background:
-        return SoundPaths.instance.backgroundSoundPaths[sound as SoundBackground]!;
+        return SoundPaths
+            .instance.backgroundSoundPaths[sound as SoundBackground]!;
       case SoundType.balance:
         return SoundPaths.instance.balanceSoundPaths[sound as SoundBalance]!;
       case SoundType.bubble:
@@ -111,19 +113,23 @@ extension SoundExtension on Widget {
       case SoundType.other:
         return SoundPaths.instance.otherSoundPaths[sound as SoundOther]!;
       case SoundType.petsCleaning:
-        return SoundPaths.instance.pets_cleaningSoundPaths[sound as SoundPetsCleaning]!;
+        return SoundPaths
+            .instance.pets_cleaningSoundPaths[sound as SoundPetsCleaning]!;
       case SoundType.petsEat:
         return SoundPaths.instance.pets_eatSoundPaths[sound as SoundPetsEat]!;
       case SoundType.petsPlay:
         return SoundPaths.instance.pets_playSoundPaths[sound as SoundPetsPlay]!;
       case SoundType.petsShortReactions:
-        return SoundPaths.instance.pets_short_reactionsSoundPaths[sound as SoundPetsShortReactions]!;
+        return SoundPaths.instance
+            .pets_short_reactionsSoundPaths[sound as SoundPetsShortReactions]!;
       case SoundType.pickup:
         return SoundPaths.instance.pickupSoundPaths[sound as SoundPickup]!;
       case SoundType.reminders:
-        return SoundPaths.instance.remindersSoundPaths[sound as SoundReminders]!;
+        return SoundPaths
+            .instance.remindersSoundPaths[sound as SoundReminders]!;
       case SoundType.resources:
-        return SoundPaths.instance.resourcesSoundPaths[sound as SoundResources]!;
+        return SoundPaths
+            .instance.resourcesSoundPaths[sound as SoundResources]!;
       case SoundType.review:
         return SoundPaths.instance.reviewSoundPaths[sound as SoundReview]!;
       case SoundType.send:
@@ -135,7 +141,8 @@ extension SoundExtension on Widget {
       case SoundType.tetris:
         return SoundPaths.instance.tetrisSoundPaths[sound as SoundTetris]!;
       case SoundType.transitions:
-        return SoundPaths.instance.transitionsSoundPaths[sound as SoundTransitions]!;
+        return SoundPaths
+            .instance.transitionsSoundPaths[sound as SoundTransitions]!;
       case SoundType.whoosh:
         return SoundPaths.instance.whooshSoundPaths[sound as SoundWhoosh]!;
     }

@@ -611,20 +611,54 @@ class DragItem {
   });
 }
 
-class PageB extends StatelessWidget {
+class PageB extends StatefulWidget {
   const PageB({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Define the sound track for this page
-    const trackId = 'page_b_containers';
-    final soundList = [
-      SoundTAP.tap,
-      SoundTAP.deepbutton,
-      SoundTAP.bubble,
-      SoundTAP.water,
-    ];
+  State<PageB> createState() => _PageBState();
+}
 
+class _PageBState extends State<PageB> {
+  // Define the sound track for this page
+  static const trackId = 'page_b_containers';
+  static final soundList = [
+    SoundTAP.tap,
+    SoundTAP.deepbutton,
+    SoundTAP.bubble,
+    SoundTAP.water,
+  ];
+
+  int currentTrackIndex = 0;
+  final soundNames = ['Tap', 'Deep Button', 'Bubble', 'Water'];
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize track and get current index
+    SoundTrackController.instance
+        .setSoundTrack(trackId, soundList, SoundType.tap);
+    currentTrackIndex =
+        SoundTrackController.instance.getCurrentTrackIndex(trackId);
+  }
+
+  Future<void> _nextTrack() async {
+    await SoundTrackController.instance.nextTrack(trackId);
+    setState(() {
+      currentTrackIndex =
+          SoundTrackController.instance.getCurrentTrackIndex(trackId);
+    });
+  }
+
+  Future<void> _previousTrack() async {
+    await SoundTrackController.instance.previousTrack(trackId);
+    setState(() {
+      currentTrackIndex =
+          SoundTrackController.instance.getCurrentTrackIndex(trackId);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Page B - Sound Track Demo'),
@@ -636,7 +670,7 @@ class PageB extends StatelessWidget {
             const Text(
               'Page B with Sound Track',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
+            ).addSound(SoundBubble.move, SoundType.bubble),
             const SizedBox(height: 10),
             const Text(
               'Each container has the same sound track.\nLeave and return to hear the next sound!',
@@ -644,7 +678,7 @@ class PageB extends StatelessWidget {
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 30),
-            
+
             // 4 containers with the same sound track
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -668,7 +702,7 @@ class PageB extends StatelessWidget {
                     ),
                   ),
                 ).addSound(soundList, SoundType.tap, trackId: trackId),
-                
+
                 // Container 2
                 Container(
                   width: 80,
@@ -690,9 +724,9 @@ class PageB extends StatelessWidget {
                 ).addSound(soundList, SoundType.tap, trackId: trackId),
               ],
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -715,7 +749,7 @@ class PageB extends StatelessWidget {
                     ),
                   ),
                 ).addSound(soundList, SoundType.tap, trackId: trackId),
-                
+
                 // Container 4
                 Container(
                   width: 80,
@@ -737,8 +771,93 @@ class PageB extends StatelessWidget {
                 ).addSound(soundList, SoundType.tap, trackId: trackId),
               ],
             ),
-            
+
             const SizedBox(height: 40),
+
+            // Track Navigation Section
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: Column(
+                children: [
+                  const Text(
+                    'Sound Track Control',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Current Track Info
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue[200]!),
+                    ),
+                    child: Text(
+                      'Current: ${soundNames[currentTrackIndex]} (${currentTrackIndex + 1}/${soundList.length})',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.blue[800],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Navigation Buttons
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: _previousTrack,
+                        icon: const Icon(Icons.skip_previous),
+                        label: const Text('Previous'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: _nextTrack,
+                        icon: const Icon(Icons.skip_next),
+                        label: const Text('Next'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  Text(
+                    'Tap containers above to hear current sound!',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 30),
             ElevatedButton(
               onPressed: () => Get.back(),
               child: const Text('Go Back'),

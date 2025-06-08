@@ -45,6 +45,29 @@ class SoundTrackController {
     await _saveTrackIndex(trackId, nextIndex);
   }
 
+  /// Move to previous sound in track
+  Future<void> previousTrack(String trackId) async {
+    if (!_trackSounds.containsKey(trackId) || _trackSounds[trackId]!.isEmpty) {
+      return;
+    }
+    final currentIndex = _trackIndexes[trackId] ?? 0;
+    final previousIndex = currentIndex == 0 
+        ? _trackSounds[trackId]!.length - 1 
+        : currentIndex - 1;
+    _trackIndexes[trackId] = previousIndex;
+    await _saveTrackIndex(trackId, previousIndex);
+  }
+
+  /// Get current track index
+  int getCurrentTrackIndex(String trackId) {
+    return _trackIndexes[trackId] ?? 0;
+  }
+
+  /// Get total tracks count
+  int getTracksCount(String trackId) {
+    return _trackSounds[trackId]?.length ?? 0;
+  }
+
   /// Load track index from storage
   Future<void> _loadTrackIndex(String trackId) async {
     final prefs = await SharedPreferences.getInstance();
