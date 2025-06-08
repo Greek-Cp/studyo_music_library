@@ -1,6 +1,69 @@
 import 'package:studyo_music_library/core/sound_manager/manager/bgm_manager.dart';
 import 'package:studyo_music_library/core/sound_manager/core/sound_enums.dart';
 import 'package:studyo_music_library/core/sound_manager/core/sound_paths.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// ─────────────────────────────────────────────────────────────────────────────
+///  SOUND TRACK CONTROLLER
+class SoundTrackController {
+  static final SoundTrackController instance = SoundTrackController._();
+  SoundTrackController._();
+
+  final Map<String, int> _trackIndexes = {};
+  final Map<String, List<dynamic>> _trackSounds = {};
+  final Map<String, SoundType> _trackTypes = {};
+
+  /// Set sound track for a specific page/widget
+  void setSoundTrack(String trackId, List<dynamic> sounds, SoundType type) {
+    _trackSounds[trackId] = sounds;
+    _trackTypes[trackId] = type;
+    _loadTrackIndex(trackId);
+  }
+
+  /// Get current sound for a track
+  dynamic getCurrentSound(String trackId) {
+    if (!_trackSounds.containsKey(trackId) || _trackSounds[trackId]!.isEmpty) {
+      return null;
+    }
+    final index = _trackIndexes[trackId] ?? 0;
+    return _trackSounds[trackId]![index];
+  }
+
+  /// Get sound type for a track
+  SoundType? getSoundType(String trackId) {
+    return _trackTypes[trackId];
+  }
+
+  /// Move to next sound in track (called when leaving page)
+  Future<void> nextTrack(String trackId) async {
+    if (!_trackSounds.containsKey(trackId) || _trackSounds[trackId]!.isEmpty) {
+      return;
+    }
+    final currentIndex = _trackIndexes[trackId] ?? 0;
+    final nextIndex = (currentIndex + 1) % _trackSounds[trackId]!.length;
+    _trackIndexes[trackId] = nextIndex;
+    await _saveTrackIndex(trackId, nextIndex);
+  }
+
+  /// Load track index from storage
+  Future<void> _loadTrackIndex(String trackId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final index = prefs.getInt('sound_track_$trackId') ?? 0;
+    _trackIndexes[trackId] = index;
+  }
+
+  /// Save track index to storage
+  Future<void> _saveTrackIndex(String trackId, int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('sound_track_$trackId', index);
+  }
+
+  /// Reset track to first sound
+  Future<void> resetTrack(String trackId) async {
+    _trackIndexes[trackId] = 0;
+    await _saveTrackIndex(trackId, 0);
+  }
+}
 
 /// ─────────────────────────────────────────────────────────────────────────────
 ///  SOUND CONTROLLER

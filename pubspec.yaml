@@ -27,6 +27,7 @@ flutter:
   assets:
     - assets/sounds/background/
     - assets/sounds/balance/
+    - assets/sounds/bgm/
     - assets/sounds/bubble/
     - assets/sounds/cheering/
     - assets/sounds/click/
@@ -37,16 +38,14 @@ flutter:
     - assets/sounds/levelup/
     - assets/sounds/login/
     - assets/sounds/messages/
-    - assets/sounds/other/
-    - assets/sounds/pets_cleaning/
-    - assets/sounds/pets_eat/
-    - assets/sounds/pets_play/
-    - assets/sounds/pets_short_reactions/
+    - assets/sounds/notification/
+    - assets/sounds/pets/
     - assets/sounds/pickup/
     - assets/sounds/reminders/
     - assets/sounds/resources/
     - assets/sounds/review/
     - assets/sounds/send/
+    - assets/sounds/sfx/
     - assets/sounds/success/
     - assets/sounds/tap/
     - assets/sounds/tetris/

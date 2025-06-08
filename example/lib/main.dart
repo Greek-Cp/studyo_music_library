@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:collection/collection.dart';
 import 'package:studyo_music_library/core/sound_manager/core/sound_controller.dart';
 import 'package:studyo_music_library/studyo_music_library.dart';
+import 'package:studyo_music_library/core/sound_manager/widgets/sound_track_wrapper.dart';
 
 // Route Observer for tracking navigation
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
@@ -615,19 +616,129 @@ class PageB extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Define the sound track for this page
+    const trackId = 'page_b_containers';
+    final soundList = [
+      SoundTAP.tap,
+      SoundTAP.deepbutton,
+      SoundTAP.bubble,
+      SoundTAP.water,
+    ];
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Page B'),
+        title: const Text('Page B - Sound Track Demo'),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              'This is Page B',
-              style: TextStyle(fontSize: 24),
+              'Page B with Sound Track',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
+            const SizedBox(height: 10),
+            const Text(
+              'Each container has the same sound track.\nLeave and return to hear the next sound!',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 30),
+            
+            // 4 containers with the same sound track
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                // Container 1
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      '1',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ).addSound(soundList, SoundType.tap, trackId: trackId),
+                
+                // Container 2
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      '2',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ).addSound(soundList, SoundType.tap, trackId: trackId),
+              ],
+            ),
+            
             const SizedBox(height: 20),
+            
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                // Container 3
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.orange,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      '3',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ).addSound(soundList, SoundType.tap, trackId: trackId),
+                
+                // Container 4
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.purple,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      '4',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ).addSound(soundList, SoundType.tap, trackId: trackId),
+              ],
+            ),
+            
+            const SizedBox(height: 40),
             ElevatedButton(
               onPressed: () => Get.back(),
               child: const Text('Go Back'),
@@ -635,7 +746,7 @@ class PageB extends StatelessWidget {
           ],
         ),
       ),
-    ).addBGM(SoundBackground.profile);
+    ).addBGM(SoundBackground.profile).withSoundTrack(trackId);
   }
 }
 
