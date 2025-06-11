@@ -4,6 +4,145 @@ import 'package:studyo_music_library/core/sound_manager/core/sound_paths.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// ─────────────────────────────────────────────────────────────────────────────
+///  DRAG SOUND TRACK CONTROLLER
+class DragSoundTrackController {
+  static final DragSoundTrackController instance = DragSoundTrackController._();
+  DragSoundTrackController._();
+
+  final Map<String, int> _trackIndexes = {};
+  final Map<String, List<dynamic>> _tapSounds = {};
+  final Map<String, List<dynamic>> _whooshSounds = {};
+  final Map<String, List<dynamic>> _dropSounds = {};
+  final Map<String, SoundType> _tapTypes = {};
+  final Map<String, SoundType> _whooshTypes = {};
+  final Map<String, SoundType> _dropTypes = {};
+
+  /// Set drag sound track for a specific widget/page
+  void setDragSoundTrack(
+    String trackId,
+    List<dynamic> tapSounds,
+    List<dynamic> whooshSounds,
+    List<dynamic> dropSounds,
+    SoundType tapType,
+    SoundType whooshType,
+    SoundType dropType,
+  ) {
+    _tapSounds[trackId] = tapSounds;
+    _whooshSounds[trackId] = whooshSounds;
+    _dropSounds[trackId] = dropSounds;
+    _tapTypes[trackId] = tapType;
+    _whooshTypes[trackId] = whooshType;
+    _dropTypes[trackId] = dropType;
+    _loadTrackIndex(trackId);
+  }
+
+  /// Get current tap sound for a track
+  dynamic getCurrentTapSound(String trackId) {
+    if (!_tapSounds.containsKey(trackId) || _tapSounds[trackId]!.isEmpty) {
+      return null;
+    }
+    final index = _trackIndexes[trackId] ?? 0;
+    final adjustedIndex = index % _tapSounds[trackId]!.length;
+    return _tapSounds[trackId]![adjustedIndex];
+  }
+
+  /// Get current whoosh sound for a track
+  dynamic getCurrentWhooshSound(String trackId) {
+    if (!_whooshSounds.containsKey(trackId) ||
+        _whooshSounds[trackId]!.isEmpty) {
+      return null;
+    }
+    final index = _trackIndexes[trackId] ?? 0;
+    final adjustedIndex = index % _whooshSounds[trackId]!.length;
+    return _whooshSounds[trackId]![adjustedIndex];
+  }
+
+  /// Get current drop sound for a track
+  dynamic getCurrentDropSound(String trackId) {
+    if (!_dropSounds.containsKey(trackId) || _dropSounds[trackId]!.isEmpty) {
+      return null;
+    }
+    final index = _trackIndexes[trackId] ?? 0;
+    final adjustedIndex = index % _dropSounds[trackId]!.length;
+    return _dropSounds[trackId]![adjustedIndex];
+  }
+
+  /// Move to next sound in track (called when leaving page)
+  Future<void> nextTrack(String trackId) async {
+    if (!_tapSounds.containsKey(trackId)) {
+      return;
+    }
+    final currentIndex = _trackIndexes[trackId] ?? 0;
+    // Use the largest list length to determine max index
+    final maxLength = [
+      _tapSounds[trackId]?.length ?? 0,
+      _whooshSounds[trackId]?.length ?? 0,
+      _dropSounds[trackId]?.length ?? 0,
+    ].reduce((a, b) => a > b ? a : b);
+
+    if (maxLength > 0) {
+      final nextIndex = (currentIndex + 1) % maxLength;
+      _trackIndexes[trackId] = nextIndex;
+      await _saveTrackIndex(trackId, nextIndex);
+    }
+  }
+
+  /// Move to previous sound in track
+  Future<void> previousTrack(String trackId) async {
+    if (!_tapSounds.containsKey(trackId)) {
+      return;
+    }
+    final currentIndex = _trackIndexes[trackId] ?? 0;
+    // Use the largest list length to determine max index
+    final maxLength = [
+      _tapSounds[trackId]?.length ?? 0,
+      _whooshSounds[trackId]?.length ?? 0,
+      _dropSounds[trackId]?.length ?? 0,
+    ].reduce((a, b) => a > b ? a : b);
+
+    if (maxLength > 0) {
+      final previousIndex =
+          currentIndex == 0 ? maxLength - 1 : currentIndex - 1;
+      _trackIndexes[trackId] = previousIndex;
+      await _saveTrackIndex(trackId, previousIndex);
+    }
+  }
+
+  /// Get current track index
+  int getCurrentTrackIndex(String trackId) {
+    return _trackIndexes[trackId] ?? 0;
+  }
+
+  /// Get info about track lengths
+  Map<String, int> getTrackLengths(String trackId) {
+    return {
+      'tap': _tapSounds[trackId]?.length ?? 0,
+      'whoosh': _whooshSounds[trackId]?.length ?? 0,
+      'drop': _dropSounds[trackId]?.length ?? 0,
+    };
+  }
+
+  /// Load track index from storage
+  Future<void> _loadTrackIndex(String trackId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final index = prefs.getInt('drag_sound_track_$trackId') ?? 0;
+    _trackIndexes[trackId] = index;
+  }
+
+  /// Save track index to storage
+  Future<void> _saveTrackIndex(String trackId, int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('drag_sound_track_$trackId', index);
+  }
+
+  /// Reset track to first sound
+  Future<void> resetTrack(String trackId) async {
+    _trackIndexes[trackId] = 0;
+    await _saveTrackIndex(trackId, 0);
+  }
+}
+
+/// ─────────────────────────────────────────────────────────────────────────────
 ///  SOUND TRACK CONTROLLER
 class SoundTrackController {
   static final SoundTrackController instance = SoundTrackController._();
@@ -51,8 +190,8 @@ class SoundTrackController {
       return;
     }
     final currentIndex = _trackIndexes[trackId] ?? 0;
-    final previousIndex = currentIndex == 0 
-        ? _trackSounds[trackId]!.length - 1 
+    final previousIndex = currentIndex == 0
+        ? _trackSounds[trackId]!.length - 1
         : currentIndex - 1;
     _trackIndexes[trackId] = previousIndex;
     await _saveTrackIndex(trackId, previousIndex);

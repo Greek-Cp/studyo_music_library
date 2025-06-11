@@ -6,6 +6,11 @@ export 'core/sound_manager/core/auto_init.dart';
 // Core BGM Manager
 export 'core/sound_manager/manager/bgm_manager.dart';
 
+// BGM Wrappers
+export 'core/sound_manager/manager/bgm_wrapper.dart';
+export 'core/sound_manager/manager/bgm_global_wrapper.dart';
+export 'core/sound_manager/manager/bgm_none_wrapper.dart';
+
 // Sound Enums
 export 'core/sound_manager/core/sound_enums.dart';
 

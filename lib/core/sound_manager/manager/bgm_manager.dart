@@ -386,6 +386,32 @@ class BgmManager {
     _queueRefresh();
   }
 
+  /* ── API untuk halaman tanpa BGM (silent) ── */
+  void pushNone() {
+    debugPrint('[BGM] PushNone: Entering silent page');
+
+    // Stop current BGM (both specific and global)
+    _stopCurrent();
+    _stopGlobalBGM();
+
+    // Increment counter to change track for when we return
+    if (_isGlobalBGMActive) {
+      _incrementCounter();
+    }
+  }
+
+  void popNone() {
+    debugPrint('[BGM] PopNone: Leaving silent page');
+
+    // Resume global BGM if no specific BGM in stack
+    if (_stack.isEmpty && _isGlobalBGMActive && _globalBGMList.isNotEmpty) {
+      _startGlobalBGM();
+    } else if (_stack.isNotEmpty) {
+      // Resume specific BGM if exists
+      _queueRefresh();
+    }
+  }
+
   /* ── NAVIGATION CONTROL ── */
   void pauseForNavigation() {
     debugPrint('[BGM] Pause for navigation');

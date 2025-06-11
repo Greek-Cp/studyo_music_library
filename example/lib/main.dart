@@ -293,6 +293,20 @@ class NavigationTestPage extends StatelessWidget {
             description: 'Navigate to Page B with different BGM',
             onTap: () => Get.to(() => const PageB()),
           ),
+          const SizedBox(height: 16),
+          _buildNavigationCard(
+            title: 'Silent Page',
+            description:
+                'Navigate to Silent Page (no BGM, but changes global BGM when return)',
+            onTap: () => Get.to(() => const SilentPage()),
+          ),
+          const SizedBox(height: 16),
+          _buildNavigationCard(
+            title: 'Drag Sound Demo',
+            description:
+                'Page with draggable objects using 3-sound-lists track system',
+            onTap: () => Get.to(() => const DragSoundPage()),
+          ),
         ],
       ),
     );
@@ -1012,5 +1026,398 @@ class ManualTestPage extends StatelessWidget {
         child: Text(label),
       ),
     );
+  }
+}
+
+class SilentPage extends StatelessWidget {
+  const SilentPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Silent Page'),
+        backgroundColor: Colors.grey[300],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.volume_off,
+              size: 80,
+              color: Colors.grey[600],
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Silent Page',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[700],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'This page has no background music.',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'When you enter and leave this page,\nthe global BGM track will change automatically!',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+                fontStyle: FontStyle.italic,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 40),
+            // Some interactive elements that still have sound effects
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    const Text(
+                      'Sound Effects Still Work',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {},
+                          child: const Text('Tap Effect'),
+                        ).addSound(SoundTAP.tap, SoundType.tap),
+                        ElevatedButton(
+                          onPressed: () {},
+                          child: const Text('Success'),
+                        ).addSound(SoundSuccess.winning, SoundType.success),
+                        ElevatedButton(
+                          onPressed: () {},
+                          child: const Text('Whoosh'),
+                        ).addSound(SoundWhoosh.longwhoosh, SoundType.whoosh),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 40),
+            ElevatedButton.icon(
+              onPressed: () => Get.back(),
+              icon: const Icon(Icons.arrow_back),
+              label: const Text('Go Back'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ).addBgmNone(); // This is the key! No BGM but changes global track
+  }
+}
+
+class DragSoundPage extends StatefulWidget {
+  const DragSoundPage({super.key});
+
+  @override
+  State<DragSoundPage> createState() => _DragSoundPageState();
+}
+
+class _DragSoundPageState extends State<DragSoundPage> {
+  // Define the drag sound track for this page
+  static const trackId = 'drag_objects_demo';
+
+  // Different length lists to demonstrate the sync behavior
+  static final tapSounds = [
+    SoundTAP.tap,
+    SoundTAP.deepbutton,
+    SoundTAP.bubble,
+    SoundTAP.water,
+  ]; // 4 sounds
+
+  static final whooshSounds = [
+    SoundWhoosh.longwhoosh,
+    SoundWhoosh.whooshAccelerate,
+  ]; // 2 sounds
+
+  static final dropSounds = [
+    SoundClip.itemGetsDropped,
+    SoundClip.containerdrop,
+  ]; // 2 sounds
+
+  int currentTrackIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize track and get current index
+    DragSoundTrackController.instance.setDragSoundTrack(
+      trackId,
+      tapSounds,
+      whooshSounds,
+      dropSounds,
+      SoundType.tap,
+      SoundType.whoosh,
+      SoundType.clip,
+    );
+    currentTrackIndex =
+        DragSoundTrackController.instance.getCurrentTrackIndex(trackId);
+  }
+
+  Future<void> _nextTrack() async {
+    await DragSoundTrackController.instance.nextTrack(trackId);
+    setState(() {
+      currentTrackIndex =
+          DragSoundTrackController.instance.getCurrentTrackIndex(trackId);
+    });
+  }
+
+  Future<void> _previousTrack() async {
+    await DragSoundTrackController.instance.previousTrack(trackId);
+    setState(() {
+      currentTrackIndex =
+          DragSoundTrackController.instance.getCurrentTrackIndex(trackId);
+    });
+  }
+
+  String _getCurrentSoundNames() {
+    final tapSound =
+        DragSoundTrackController.instance.getCurrentTapSound(trackId);
+    final whooshSound =
+        DragSoundTrackController.instance.getCurrentWhooshSound(trackId);
+    final dropSound =
+        DragSoundTrackController.instance.getCurrentDropSound(trackId);
+    return 'Tap: ${tapSound.toString().split('.').last}\nWhoosh: ${whooshSound.toString().split('.').last}\nDrop: ${dropSound.toString().split('.').last}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Drag Sound Demo'),
+        backgroundColor: Colors.deepPurple,
+        foregroundColor: Colors.white,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Info Card
+            Card(
+              color: Colors.deepPurple[50],
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Text(
+                      'Drag Sound Track Demo',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple[800],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Each draggable object uses 3 different sound lists:\n• Tap sounds (${tapSounds.length} sounds)\n• Whoosh sounds (${whooshSounds.length} sounds)\n• Drop sounds (${dropSounds.length} sounds)',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.deepPurple[600],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.deepPurple[200]!),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            'Current Track: ${currentTrackIndex + 1}',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.deepPurple[800],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _getCurrentSoundNames(),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.deepPurple[600],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Draggable Objects Grid
+            Expanded(
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 1.2,
+                ),
+                itemCount: 4,
+                itemBuilder: (context, index) {
+                  final colors = [
+                    Colors.red,
+                    Colors.blue,
+                    Colors.green,
+                    Colors.orange
+                  ];
+                  final emojis = ['🎮', '🎲', '⚽', '🎯'];
+
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: colors[index].withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: colors[index], width: 2),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          emojis[index],
+                          style: const TextStyle(fontSize: 40),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Drag Me ${index + 1}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: colors[index],
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Tap, Drag & Drop',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colors[index].withOpacity(0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ).addDragSound(
+                    tapSounds: tapSounds,
+                    whooshSounds: whooshSounds,
+                    dropSounds: dropSounds,
+                    tapType: SoundType.tap,
+                    whooshType: SoundType.whoosh,
+                    dropType: SoundType.clip,
+                    trackId: trackId,
+                    volume: 0.8,
+                  );
+                },
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Track Control Section
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Text(
+                      'Track Controls',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple[800],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: _previousTrack,
+                          icon: const Icon(Icons.skip_previous),
+                          label: const Text('Previous'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: _nextTrack,
+                          icon: const Icon(Icons.skip_next),
+                          label: const Text('Next'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Leave and return to this page\nto hear the next sound set!',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                        fontStyle: FontStyle.italic,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            ElevatedButton.icon(
+              onPressed: () => Get.back(),
+              icon: const Icon(Icons.arrow_back),
+              label: const Text('Go Back'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ).addBgmNone().withDragSoundTrack(trackId);
   }
 }

@@ -6,6 +6,7 @@ import 'package:studyo_music_library/core/sound_manager/core/sound_controller.da
 import 'package:studyo_music_library/core/sound_manager/manager/bgm_global_wrapper.dart';
 import 'package:studyo_music_library/core/sound_manager/manager/bgm_manager.dart';
 import 'package:studyo_music_library/core/sound_manager/manager/bgm_wrapper.dart';
+import 'package:studyo_music_library/core/sound_manager/manager/bgm_none_wrapper.dart';
 import 'package:studyo_music_library/core/sound_manager/widgets/sound_widgets.dart';
 
 extension SoundExtension on Widget {
@@ -79,6 +80,42 @@ extension SoundExtension on Widget {
       behavior: HitTestBehavior.translucent,
       onTapDown: (_) => playOneShot(path, volume: volume),
       child: this,
+    );
+  }
+
+  /// Add drag sound with 3 separate sound lists (tap, whoosh, drop) with track management
+  ///
+  /// ```dart
+  /// widget.addDragSound(
+  ///   tapSounds: [SoundTAP.tap, SoundTAP.deepbutton],
+  ///   whooshSounds: [SoundWhoosh.longwhoosh, SoundWhoosh.shortWhoosh],
+  ///   dropSounds: [SoundClip.itemGetsDropped, SoundClip.containerdrop],
+  ///   tapType: SoundType.tap,
+  ///   whooshType: SoundType.whoosh,
+  ///   dropType: SoundType.clip,
+  ///   trackId: 'drag_objects',
+  /// )
+  /// ```
+  Widget addDragSound({
+    required List<dynamic> tapSounds,
+    required List<dynamic> whooshSounds,
+    required List<dynamic> dropSounds,
+    required SoundType tapType,
+    required SoundType whooshType,
+    required SoundType dropType,
+    required String trackId,
+    double volume = 1.0,
+  }) {
+    return DragSoundTrackWrapper(
+      child: this,
+      tapSounds: tapSounds,
+      whooshSounds: whooshSounds,
+      dropSounds: dropSounds,
+      tapType: tapType,
+      whooshType: whooshType,
+      dropType: dropType,
+      trackId: trackId,
+      volume: volume,
     );
   }
 
@@ -158,4 +195,8 @@ extension BgmGlobalExtension on Widget {
         child: this,
         listSound: listSound,
       );
+}
+
+extension BgmNoneExtension on Widget {
+  Widget addBgmNone() => BgmNoneWrapper(child: this);
 }
